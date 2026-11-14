@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import Navbar from "./components/Navbar";
+import { AnimatedText } from "@/components/ui/AnimatedText";
 import {
   Building2,
   Sparkles,
@@ -21,10 +22,8 @@ export default async function LandingPage() {
 
       {/* 2. Hero Section harmonized with brand colors */}
       <div className="flex-1 flex flex-col justify-center relative overflow-hidden py-24 sm:py-32">
-        {/* Luminous Bright Violet Center Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[520px] bg-gradient-to-tr from-[#7C3AED]/40 via-[#8B5CF6]/45 to-[#6366F1]/30 blur-[130px] rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-violet-600/45 blur-[85px] rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[160px] bg-purple-500/35 blur-[50px] rounded-full pointer-events-none" />
+        {/* Soft, Balanced Violet Center Ambient Glow with Subtle Motion */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] bg-gradient-to-tr from-violet-600/25 via-[#8B5CF6]/22 to-[#3B82F6]/18 blur-[120px] rounded-full pointer-events-none transition-all duration-1000" />
 
         <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto">
           {/* Top Pill matching electric blue dot */}
@@ -33,13 +32,14 @@ export default async function LandingPage() {
             <span className="text-neutral-300">Introducing AI Task Assignment &rarr;</span>
           </div>
 
-          {/* Main Heading with Brand White + Electric Blue */}
+          {/* Main Heading with Word in Motion */}
           <h1 className="max-w-5xl text-5xl sm:text-7xl font-bold tracking-tight mb-8 leading-[1.15]">
             <span className="text-white">Core</span>
             <span className="text-[#3B82F6]">Sync</span>{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/70">
-              is a better way <br className="hidden sm:block" /> to build products
+              is a better way <br className="hidden sm:block" /> to{" "}
             </span>
+            <AnimatedText words={["build products", "ship software", "manage sprints", "orchestrate AI"]} />
           </h1>
 
           {/* Subtitle */}
