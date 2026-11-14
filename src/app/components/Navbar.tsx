@@ -11,7 +11,7 @@ export default async function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Left: Official Brand Logo matching the uploaded screenshot */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6 lg:gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             {/* Blue to Purple Gradient Badge with Sparkle */}
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3B82F6] via-[#6366F1] to-[#A855F7] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(59,130,246,0.35)] group-hover:scale-105 transition-transform">
@@ -23,20 +23,38 @@ export default async function Navbar() {
             </span>
           </Link>
           
-          {/* Navigation Links */}
-          <nav className="hidden sm:flex items-center gap-6">
-            <Link
-              href="/dashboard"
+          {/* Top Left Navigation Links: Pricing, Templates, Contact */}
+          <nav className="hidden sm:flex items-center gap-4 lg:gap-6">
+            <a
+              href="#pricing"
               className="text-xs sm:text-sm font-medium text-neutral-400 hover:text-white transition-colors"
             >
-              Workspace
-            </Link>
+              Pricing
+            </a>
+            <a
+              href="#templates"
+              className="text-xs sm:text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Templates
+            </a>
+            <a
+              href="#contact"
+              className="text-xs sm:text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Contact
+            </a>
             <a
               href="#features"
               className="text-xs sm:text-sm font-medium text-neutral-400 hover:text-white transition-colors"
             >
               Capabilities
             </a>
+            <Link
+              href="/dashboard"
+              className="text-xs sm:text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Workspace
+            </Link>
           </nav>
         </div>
         
