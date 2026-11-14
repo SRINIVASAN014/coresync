@@ -7,11 +7,11 @@ interface LiveWordsHeadlineProps {
 }
 
 export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
+  const [isMounted, setIsMounted] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
   const [scrollY, setScrollY] = React.useState(0);
   const containerRef = React.useRef<HTMLHeadingElement>(null);
 
-  // Typewriter state
   const words = React.useMemo(
     () => [
       "build products",
@@ -24,11 +24,12 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
   );
 
   const [wordIndex, setWordIndex] = React.useState(0);
-  const [typedText, setTypedText] = React.useState("");
+  const [typedText, setTypedText] = React.useState("build products");
   const [isDeleting, setIsDeleting] = React.useState(false);
 
-  // 1. Initial entrance animation trigger on reload
+  // 1. Mark component as mounted on client only (prevents hydration mismatch)
   React.useEffect(() => {
+    setIsMounted(true);
     const timeout = setTimeout(() => {
       setIsVisible(true);
     }, 150);
@@ -36,13 +37,15 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     return () => clearTimeout(timeout);
   }, []);
 
-  // 2. Slow, deliberate typewriter motion
+  // 2. Slow typewriter motion (runs purely after mount on client)
   React.useEffect(() => {
+    if (!isMounted) return;
+
     const currentFullWord = words[wordIndex];
     let timer: NodeJS.Timeout;
 
     if (!isDeleting && typedText === currentFullWord) {
-      // Word is fully typed out: Pause for 3.0s so it can be read in a calm pace
+      // Word is fully typed out: Pause for 3.0s so it can be read calmly
       timer = setTimeout(() => {
         setIsDeleting(true);
       }, 3000);
@@ -64,10 +67,12 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     }
 
     return () => clearTimeout(timer);
-  }, [typedText, isDeleting, wordIndex, words]);
+  }, [typedText, isDeleting, wordIndex, words, isMounted]);
 
   // 3. Smooth live scroll responsiveness on Scroll Down and Scroll Up
   React.useEffect(() => {
+    if (!isMounted) return;
+
     let ticking = false;
 
     const handleScroll = () => {
@@ -101,10 +106,10 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
       window.removeEventListener("scroll", handleScroll);
       observer.disconnect();
     };
-  }, []);
+  }, [isMounted]);
 
-  const scrollOffset = Math.min(scrollY * 0.05, 20);
-  const scrollOpacity = Math.max(1 - scrollY * 0.0015, 0.45);
+  const scrollOffset = isMounted ? Math.min(scrollY * 0.05, 20) : 0;
+  const scrollOpacity = isMounted ? Math.max(1 - scrollY * 0.0015, 0.45) : 1;
 
   const firstLineWords = [
     { text: "is", delay: 200 },
@@ -116,6 +121,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
   return (
     <h1
       ref={containerRef}
+      suppressHydrationWarning
       style={{
         transform: `translateY(-${scrollOffset}px)`,
         opacity: scrollOpacity,
@@ -124,6 +130,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     >
       {/* Brand Name: CoreSync */}
       <span
+        suppressHydrationWarning
         style={{
           transitionDelay: "100ms",
           transform: isVisible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.97)",
@@ -144,6 +151,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
       {firstLineWords.map((item, idx) => (
         <span
           key={idx}
+          suppressHydrationWarning
           style={{
             transitionDelay: `${item.delay}ms`,
             transform: isVisible ? "translateY(0)" : "translateY(20px)",
@@ -160,6 +168,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
       {/* Second Line: "to" */}
       <span
+        suppressHydrationWarning
         style={{
           transitionDelay: "680ms",
           transform: isVisible ? "translateY(0)" : "translateY(20px)",
@@ -173,6 +182,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
       {/* Dynamic Typewriter Words in Slow Typing Motion */}
       <span
+        suppressHydrationWarning
         style={{
           transitionDelay: "800ms",
           transform: isVisible ? "translateY(0)" : "translateY(20px)",
@@ -180,8 +190,11 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
         }}
         className="inline-block transition-all duration-1000 ease-out min-w-[260px] sm:min-w-[420px] text-left align-baseline"
       >
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold">
-          {typedText}
+        <span
+          suppressHydrationWarning
+          className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold"
+        >
+          {isMounted ? typedText : "build products"}
         </span>
         {/* Blinking Electric Blue Typewriter Cursor */}
         <span className="inline-block w-[3px] sm:w-[4px] h-[0.75em] bg-[#3B82F6] ml-1 align-baseline animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.9)]" />
