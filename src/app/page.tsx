@@ -29,12 +29,6 @@ export default async function LandingPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] bg-gradient-to-tr from-violet-600/25 via-[#8B5CF6]/22 to-[#3B82F6]/18 blur-[120px] rounded-full pointer-events-none" />
 
         <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto">
-          {/* Top Pill matching electric blue dot */}
-          <div className="mb-8 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 hover:border-[#3B82F6]/40 hover:bg-white/10 text-xs sm:text-sm text-[#8A8F98] transition cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-            <span className="flex h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.9)]" />
-            <span className="text-neutral-300">Introducing AI Task Assignment &rarr;</span>
-          </div>
-
           {/* Main Heading with Live Words in Motion on Reload and Scroll */}
           <LiveWordsHeadline />
 
