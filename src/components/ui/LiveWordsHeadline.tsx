@@ -14,17 +14,18 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
   const words = React.useMemo(
     () => [
-      "build extraordinary products",
-      "ship breakthrough software",
-      "empower high-velocity teams",
-      "orchestrate trusted AI agents",
-      "scale without limits",
+      "build products",
+      "ship faster",
+      "build together",
+      "work smarter",
+      "scale faster",
+      "create impact",
     ],
     []
   );
 
   const [wordIndex, setWordIndex] = React.useState(0);
-  const [typedText, setTypedText] = React.useState("build extraordinary products");
+  const [typedText, setTypedText] = React.useState("build products");
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   // 1. Mark component as mounted on client only (prevents hydration mismatch)
@@ -166,38 +167,40 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
       <br className="hidden sm:block" />
 
-      {/* Second Line: "to" */}
-      <span
-        suppressHydrationWarning
-        style={{
-          transitionDelay: "680ms",
-          transform: isVisible ? "translateY(0)" : "translateY(20px)",
-          opacity: isVisible ? 1 : 0,
-          filter: isVisible ? "blur(0px)" : "blur(5px)",
-        }}
-        className="inline-block transition-all duration-1000 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3"
-      >
-        to
-      </span>
-
-      {/* Dynamic Typewriter Words in Slow Typing Motion */}
-      <span
-        suppressHydrationWarning
-        style={{
-          transitionDelay: "800ms",
-          transform: isVisible ? "translateY(0)" : "translateY(20px)",
-          opacity: isVisible ? 1 : 0,
-        }}
-        className="inline-block transition-all duration-1000 ease-out min-w-[260px] sm:min-w-[420px] text-left align-baseline"
-      >
+      {/* Second Line: "to" + dynamic words wrapped together so it NEVER breaks onto a third line */}
+      <span className="inline-flex items-baseline whitespace-nowrap justify-center mt-1 sm:mt-0">
         <span
           suppressHydrationWarning
-          className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold"
+          style={{
+            transitionDelay: "680ms",
+            transform: isVisible ? "translateY(0)" : "translateY(20px)",
+            opacity: isVisible ? 1 : 0,
+            filter: isVisible ? "blur(0px)" : "blur(5px)",
+          }}
+          className="inline-block transition-all duration-1000 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3"
         >
-          {isMounted ? typedText : "build extraordinary products"}
+          to
         </span>
-        {/* Blinking Electric Blue Typewriter Cursor */}
-        <span className="inline-block w-[3px] sm:w-[4px] h-[0.75em] bg-[#3B82F6] ml-1 align-baseline animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.9)]" />
+
+        {/* Dynamic Typewriter Words in Slow Typing Motion */}
+        <span
+          suppressHydrationWarning
+          style={{
+            transitionDelay: "800ms",
+            transform: isVisible ? "translateY(0)" : "translateY(20px)",
+            opacity: isVisible ? 1 : 0,
+          }}
+          className="inline-block transition-all duration-1000 ease-out min-w-[200px] sm:min-w-[280px] text-left align-baseline"
+        >
+          <span
+            suppressHydrationWarning
+            className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold"
+          >
+            {isMounted ? typedText : "build products"}
+          </span>
+          {/* Blinking Electric Blue Typewriter Cursor */}
+          <span className="inline-block w-[3px] sm:w-[4px] h-[0.75em] bg-[#3B82F6] ml-1.5 align-baseline animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.9)]" />
+        </span>
       </span>
     </h1>
   );
