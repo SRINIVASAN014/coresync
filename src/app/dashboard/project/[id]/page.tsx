@@ -2,10 +2,9 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Sparkles, ArrowLeft, KanbanSquare, CheckCircle2, Clock, Plus } from "lucide-react";
+import { Sparkles, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { db } from "@/lib/db";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
@@ -18,60 +17,37 @@ export default async function ProjectDetails({
   const session = await getServerSession();
   const { id } = await params;
 
-  // Attempt to load from PostgreSQL
-  let project: any = null;
-  try {
-    project = await db.project.findFirst({
-      where: { id: id },
-      include: { tasks: true },
-    });
-  } catch (err) {
-    project = null;
-  }
+  // 1. Fetch Real Project & Real Tasks from Neon Cloud PostgreSQL
+  let project = await db.project.findUnique({
+    where: { id: id },
+    include: {
+      tasks: {
+        include: {
+          assignee: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      },
+      owner: { select: { name: true, email: true } },
+    },
+  });
 
-  // Demo fallback project if not found in db yet
   if (!project) {
-    project = {
-      id: id,
-      name: "Cloud Infrastructure Zero-Day Hardening",
-      key: "SEC",
-      description:
-        "Comprehensive infrastructure audit, IAM boundary enforcement, and automated threat detection.",
-      status: "ACTIVE",
-      priority: "HIGH",
-      tasks: [
-        {
-          id: "t-1",
-          key: "SEC-1",
-          title: "Audit IAM wildcard policies across staging & production",
-          description: "Identify all excessive administrative roles and generate least-privilege policies.",
-          status: "TODO",
-          priority: "HIGH",
-          aiGenerated: false,
-        },
-        {
-          id: "t-2",
-          key: "SEC-2",
-          title: "Implement PostgreSQL Row-Level Security across tenant entities",
-          description: "Verify Company A cannot access Company B under any circumstances.",
-          status: "IN_PROGRESS",
-          priority: "URGENT",
-          aiGenerated: true,
-        },
-        {
-          id: "t-3",
-          key: "SEC-3",
-          title: "Configure automated Sentry error monitoring and alert triggers",
-          description: "Notify SecOps in Slack when anomalous 403 authorization failures occur.",
-          status: "DONE",
-          priority: "MEDIUM",
-          aiGenerated: false,
-        },
-      ],
-    };
+    return (
+      <div className="p-12 text-center space-y-4 max-w-md mx-auto">
+        <h2 className="text-xl font-bold text-white">Project Not Found</h2>
+        <p className="text-xs text-neutral-400">
+          This project may have been deleted or your account does not have authorization to view it.
+        </p>
+        <Link href="/dashboard">
+          <Button variant="primary" size="sm">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Return to Dashboard
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
-  // Server Action to generate tasks via AI
+  // 2. Server Action to Generate Real Tasks via Gemini AI
   async function generateAITasks() {
     "use server";
     try {
@@ -81,12 +57,12 @@ export default async function ProjectDetails({
       }
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `
-        You are a Senior Technical Project Manager and Architect.
-        Break down this project into 3 highly actionable, concrete software engineering tasks.
+        You are a Senior Technical Project Manager.
+        Break down this project into 3 concrete, actionable software engineering tasks.
         Project Name: ${project?.name}
         Project Description: ${project?.description}
         Return ONLY valid JSON array with objects containing title, description, priority:
-        [{"title": "Task title", "description": "Details", "priority": "HIGH"}]
+        [{"title": "Task title", "description": "Technical details", "priority": "HIGH"}]
       `;
       const result = await model.generateContent(prompt);
       const responseText = result.response
@@ -96,25 +72,22 @@ export default async function ProjectDetails({
         .trim();
       const aiTasks = JSON.parse(responseText);
 
-      // If project exists in real database, persist
-      const dbProject = await db.project.findUnique({ where: { id: id } });
-      if (dbProject) {
-        for (let i = 0; i < aiTasks.length; i++) {
-          const t = aiTasks[i];
-          const taskKey = `${dbProject.key}-${Date.now().toString().slice(-3)}${i}`;
-          await db.task.create({
-            data: {
-              key: taskKey,
-              title: t.title,
-              description: t.description,
-              status: "TODO",
-              priority: (t.priority as any) || "MEDIUM",
-              aiGenerated: true,
-              projectId: dbProject.id,
-              creatorId: dbProject.ownerId,
-            },
-          });
-        }
+      // Persist real tasks to Neon PostgreSQL
+      for (let i = 0; i < aiTasks.length; i++) {
+        const t = aiTasks[i];
+        const taskKey = `${project!.key}-${Date.now().toString().slice(-4)}${i}`;
+        await db.task.create({
+          data: {
+            key: taskKey,
+            title: t.title,
+            description: t.description,
+            status: "TODO",
+            priority: (t.priority as any) || "MEDIUM",
+            aiGenerated: true,
+            projectId: project!.id,
+            creatorId: project!.ownerId,
+          },
+        });
       }
       revalidatePath(`/dashboard/project/${id}`);
     } catch (error) {
@@ -123,10 +96,10 @@ export default async function ProjectDetails({
   }
 
   const columns = [
-    { title: "To Do", status: "TODO", count: project.tasks.filter((t: any) => t.status === "TODO").length },
-    { title: "In Progress", status: "IN_PROGRESS", count: project.tasks.filter((t: any) => t.status === "IN_PROGRESS").length },
-    { title: "In Review", status: "IN_REVIEW", count: project.tasks.filter((t: any) => t.status === "IN_REVIEW").length },
-    { title: "Done", status: "DONE", count: project.tasks.filter((t: any) => t.status === "DONE").length },
+    { title: "To Do", status: "TODO", count: project.tasks.filter((t) => t.status === "TODO").length },
+    { title: "In Progress", status: "IN_PROGRESS", count: project.tasks.filter((t) => t.status === "IN_PROGRESS").length },
+    { title: "In Review", status: "IN_REVIEW", count: project.tasks.filter((t) => t.status === "IN_REVIEW").length },
+    { title: "Done", status: "DONE", count: project.tasks.filter((t) => t.status === "DONE").length },
   ];
 
   return (
@@ -167,10 +140,10 @@ export default async function ProjectDetails({
         </div>
       </div>
 
-      {/* Kanban Board Columns */}
+      {/* Real Kanban Board Columns */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {columns.map((col) => {
-          const colTasks = project.tasks.filter((t: any) => t.status === col.status);
+          const colTasks = project.tasks.filter((t) => t.status === col.status);
 
           return (
             <div
@@ -187,16 +160,16 @@ export default async function ProjectDetails({
                 </span>
               </div>
 
-              {/* Tasks List */}
+              {/* Real Tasks List */}
               <div className="space-y-3 flex-1 overflow-y-auto">
-                {colTasks.map((task: any) => (
+                {colTasks.map((task) => (
                   <div
                     key={task.id}
                     className="p-3.5 rounded-lg border border-white/10 bg-[#13151A] hover:border-white/20 hover:bg-[#181A20] transition group shadow-sm space-y-2 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono text-neutral-400">
-                        {task.key || "SEC-0"}
+                        {task.key}
                       </span>
                       {task.aiGenerated && (
                         <Badge variant="ai" className="text-[9px] px-1.5 py-0">
@@ -223,16 +196,18 @@ export default async function ProjectDetails({
                         }
                         className="text-[9px] px-1.5 py-0"
                       >
-                        {task.priority || "MEDIUM"}
+                        {task.priority}
                       </Badge>
-                      <span className="font-mono">Assignee</span>
+                      <span className="font-mono text-[10px] text-neutral-400 truncate max-w-[100px]">
+                        {task.assignee?.name || "Unassigned"}
+                      </span>
                     </div>
                   </div>
                 ))}
 
                 {colTasks.length === 0 && (
                   <div className="h-32 border border-dashed border-white/5 rounded-lg flex items-center justify-center text-xs text-neutral-600">
-                    No tasks
+                    No tasks in {col.title}
                   </div>
                 )}
               </div>
