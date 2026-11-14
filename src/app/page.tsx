@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import Navbar from "./components/Navbar";
-import { AnimatedText } from "@/components/ui/AnimatedText";
+import { LiveWordsHeadline } from "@/components/ui/LiveWordsHeadline";
 import {
   Building2,
   Sparkles,
@@ -32,15 +32,8 @@ export default async function LandingPage() {
             <span className="text-neutral-300">Introducing AI Task Assignment &rarr;</span>
           </div>
 
-          {/* Main Heading with Word in Motion */}
-          <h1 className="max-w-5xl text-5xl sm:text-7xl font-bold tracking-tight mb-8 leading-[1.15]">
-            <span className="text-white">Core</span>
-            <span className="text-[#3B82F6]">Sync</span>{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/70">
-              is a better way <br className="hidden sm:block" /> to{" "}
-            </span>
-            <AnimatedText words={["build products", "ship software", "manage sprints", "orchestrate AI"]} />
-          </h1>
+          {/* Main Heading with Live Words in Motion on Reload and Scroll */}
+          <LiveWordsHeadline />
 
           {/* Subtitle */}
           <p className="max-w-2xl text-lg sm:text-xl text-[#8A8F98] mb-12 leading-relaxed">
