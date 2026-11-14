@@ -21,8 +21,10 @@ export default async function LandingPage() {
 
       {/* 2. Hero Section harmonized with brand colors */}
       <div className="flex-1 flex flex-col justify-center relative overflow-hidden py-24 sm:py-32">
-        {/* Ambient Electric Blue & Violet Center Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[420px] bg-gradient-to-tr from-[#3B82F6]/20 via-[#6366F1]/20 to-[#A855F7]/15 blur-[130px] rounded-full pointer-events-none" />
+        {/* Luminous Bright Violet Center Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[520px] bg-gradient-to-tr from-[#7C3AED]/40 via-[#8B5CF6]/45 to-[#6366F1]/30 blur-[130px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-violet-600/45 blur-[85px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[160px] bg-purple-500/35 blur-[50px] rounded-full pointer-events-none" />
 
         <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto">
           {/* Top Pill matching electric blue dot */}
