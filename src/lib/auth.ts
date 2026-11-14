@@ -72,6 +72,24 @@ export const authOptions: NextAuthOptions = {
           token.organizationName = member.organization.name;
           token.role = member.role;
         }
+      } else if (!token.id && token.email) {
+        // Fallback for Google OAuth or preexisting tokens: resolve user from database
+        const dbUser = await db.user.findUnique({
+          where: { email: token.email },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          const member = await db.organizationMember.findFirst({
+            where: { userId: dbUser.id },
+            include: { organization: true },
+            orderBy: { joinedAt: "asc" },
+          });
+          if (member) {
+            token.organizationId = member.organizationId;
+            token.organizationName = member.organization.name;
+            token.role = member.role;
+          }
+        }
       }
       return token;
     },

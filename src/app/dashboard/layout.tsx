@@ -13,21 +13,37 @@ export default async function DashboardLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !session.user.email) {
     redirect("/login");
   }
 
-  const userEmail = session.user.email || "admin@cybertech.com";
-  const userName = session.user.name || "Enterprise User";
+  // 1. Resolve Verified User from Database by Email
+  let dbUser = await db.user.findUnique({
+    where: { email: session.user.email.toLowerCase().trim() },
+  });
 
-  // Fetch all organizations the user belongs to
+  if (!dbUser) {
+    dbUser = await db.user.create({
+      data: {
+        email: session.user.email.toLowerCase().trim(),
+        name: session.user.name || "Enterprise User",
+        image: session.user.image,
+      },
+    });
+  }
+
+  const userId = dbUser.id;
+  const userEmail = dbUser.email;
+  const userName = dbUser.name || session.user.name || "Enterprise User";
+
+  // 2. Fetch Organizations this specific user belongs to
   let memberships = await db.organizationMember.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     include: { organization: true },
     orderBy: { joinedAt: "asc" },
   });
 
-  // If user doesn't have any memberships yet, assign them to the default seeded org
+  // 3. If user has no workspace yet, attach them to the default enterprise org
   if (memberships.length === 0) {
     const defaultOrg = await db.organization.findFirst({
       orderBy: { createdAt: "asc" },
@@ -36,8 +52,8 @@ export default async function DashboardLayout({
       const newMembership = await db.organizationMember.create({
         data: {
           organizationId: defaultOrg.id,
-          userId: session.user.id,
-          role: "MEMBER",
+          userId,
+          role: "OWNER",
         },
         include: { organization: true },
       });
@@ -45,10 +61,10 @@ export default async function DashboardLayout({
     }
   }
 
+  // 4. Resolve Active Organization from Cookie or First Membership
   const cookieStore = await cookies();
   const activeOrgCookie = cookieStore.get("coresync_active_org_id")?.value;
 
-  // Find active membership matching cookie, or fallback to first membership
   const activeMembership =
     memberships.find((m) => m.organizationId === activeOrgCookie) ||
     memberships[0];
@@ -57,13 +73,25 @@ export default async function DashboardLayout({
   const orgSlug = activeMembership?.organization?.slug || "cybertech-global";
   const userRole = activeMembership?.role || "OWNER";
 
-  const allOrganizations = memberships.map((m) => ({
-    id: m.organization.id,
-    name: m.organization.name,
-    slug: m.organization.slug,
-    role: m.role,
-    isActive: m.organization.id === activeMembership?.organizationId,
-  }));
+  // 5. Strictly Deduplicate Organizations by Organization ID (Guarantees unique React keys)
+  const uniqueOrgsMap = new Map<
+    string,
+    { id: string; name: string; slug: string; role: string; isActive: boolean }
+  >();
+
+  for (const m of memberships) {
+    if (m.organization && !uniqueOrgsMap.has(m.organization.id)) {
+      uniqueOrgsMap.set(m.organization.id, {
+        id: m.organization.id,
+        name: m.organization.name,
+        slug: m.organization.slug,
+        role: m.role,
+        isActive: m.organization.id === activeMembership?.organizationId,
+      });
+    }
+  }
+
+  const allOrganizations = Array.from(uniqueOrgsMap.values());
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#080808]">

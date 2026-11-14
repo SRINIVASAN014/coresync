@@ -59,6 +59,18 @@ export function Sidebar({
 
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
+  // Deduplicate organizations defensively so React keys are always unique
+  const uniqueOrganizations = React.useMemo(() => {
+    const map = new Map<string, OrgItem>();
+    organizations.forEach((org, idx) => {
+      const key = org.id || `org-${idx}`;
+      if (!map.has(key)) {
+        map.set(key, org);
+      }
+    });
+    return Array.from(map.values());
+  }, [organizations]);
+
   // Close dropdown on click outside
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -148,15 +160,15 @@ export function Sidebar({
           {isOrgDropdownOpen && (
             <div className="absolute top-full left-3 right-3 mt-1.5 bg-[#0F1015] border border-white/10 rounded-xl p-2 shadow-[0_15px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl z-50">
               <div className="px-2 py-1 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                Workspaces ({organizations.length || 1})
+                Workspaces ({uniqueOrganizations.length || 1})
               </div>
 
               <div className="max-h-48 overflow-y-auto space-y-1 my-1">
-                {organizations.map((org) => {
+                {uniqueOrganizations.map((org, index) => {
                   const isActive = org.name === currentOrgName;
                   return (
                     <button
-                      key={org.id}
+                      key={org.id ? `${org.id}-${index}` : `workspace-${index}`}
                       onClick={() => handleSwitchOrg(org.id)}
                       className={cn(
                         "w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs transition cursor-pointer",
