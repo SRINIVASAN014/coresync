@@ -9,19 +9,25 @@ interface LiveWordsHeadlineProps {
 export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const [scrollY, setScrollY] = React.useState(0);
-  const [rotatingIndex, setRotatingIndex] = React.useState(0);
-  const [isWordFading, setIsWordFading] = React.useState(false);
   const containerRef = React.useRef<HTMLHeadingElement>(null);
 
-  const dynamicWords = [
-    "build products",
-    "ship software",
-    "manage sprints",
-    "orchestrate AI",
-    "scale engineering",
-  ];
+  // Typewriter state
+  const words = React.useMemo(
+    () => [
+      "build products",
+      "ship software",
+      "manage sprints",
+      "orchestrate AI",
+      "scale engineering",
+    ],
+    []
+  );
 
-  // 1. Trigger live entrance gracefully on initial reload
+  const [wordIndex, setWordIndex] = React.useState(0);
+  const [typedText, setTypedText] = React.useState("");
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  // 1. Initial entrance animation trigger on reload
   React.useEffect(() => {
     const timeout = setTimeout(() => {
       setIsVisible(true);
@@ -30,20 +36,37 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     return () => clearTimeout(timeout);
   }, []);
 
-  // 2. Calmer, slower rotating action words (cycles every 4.8s with a smooth 600ms fade)
+  // 2. Slow, deliberate typewriter motion
   React.useEffect(() => {
-    const wordTimer = setInterval(() => {
-      setIsWordFading(true);
-      setTimeout(() => {
-        setRotatingIndex((prev) => (prev + 1) % dynamicWords.length);
-        setIsWordFading(false);
-      }, 600); // 600ms smooth cross-fade
-    }, 4800); // Relaxed 4.8 second reading interval
+    const currentFullWord = words[wordIndex];
+    let timer: NodeJS.Timeout;
 
-    return () => clearInterval(wordTimer);
-  }, [dynamicWords.length]);
+    if (!isDeleting && typedText === currentFullWord) {
+      // Word is fully typed out: Pause for 3.0s so it can be read in a calm pace
+      timer = setTimeout(() => {
+        setIsDeleting(true);
+      }, 3000);
+    } else if (isDeleting && typedText === "") {
+      // Word is fully backspaced: Pause briefly then switch to next word
+      setIsDeleting(false);
+      setWordIndex((prev) => (prev + 1) % words.length);
+      timer = setTimeout(() => {}, 500);
+    } else {
+      // Typing pace: Slow deliberate typing (115ms per letter); Deleting pace: 50ms
+      const typingSpeed = isDeleting ? 50 : 115;
+      timer = setTimeout(() => {
+        setTypedText((prev) =>
+          isDeleting
+            ? currentFullWord.substring(0, prev.length - 1)
+            : currentFullWord.substring(0, prev.length + 1)
+        );
+      }, typingSpeed);
+    }
 
-  // 3. Smooth, relaxed responsiveness on Scroll Down and Scroll Up
+    return () => clearTimeout(timer);
+  }, [typedText, isDeleting, wordIndex, words]);
+
+  // 3. Smooth live scroll responsiveness on Scroll Down and Scroll Up
   React.useEffect(() => {
     let ticking = false;
 
@@ -59,7 +82,6 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Intersection Observer to smoothly re-bloom when scrolling back into viewport
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -81,15 +103,14 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     };
   }, []);
 
-  // Smooth gentle parallax scroll factor
   const scrollOffset = Math.min(scrollY * 0.05, 20);
   const scrollOpacity = Math.max(1 - scrollY * 0.0015, 0.45);
 
   const firstLineWords = [
-    { text: "is", delay: 220 },
-    { text: "a", delay: 340 },
-    { text: "better", delay: 460 },
-    { text: "way", delay: 580 },
+    { text: "is", delay: 200 },
+    { text: "a", delay: 320 },
+    { text: "better", delay: 440 },
+    { text: "way", delay: 560 },
   ];
 
   return (
@@ -101,7 +122,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
       }}
       className={`max-w-5xl text-5xl sm:text-7xl font-bold tracking-tight mb-8 leading-[1.15] select-none transition-transform duration-300 ease-out ${className}`}
     >
-      {/* Brand Name: CoreSync with Calibrated Glow */}
+      {/* Brand Name: CoreSync */}
       <span
         style={{
           transitionDelay: "100ms",
@@ -119,7 +140,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
         </span>
       </span>
 
-      {/* Static Line 1 Words (Smooth, slower staggered reveal on reload and scroll) */}
+      {/* Static Words */}
       {firstLineWords.map((item, idx) => (
         <span
           key={idx}
@@ -140,7 +161,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
       {/* Second Line: "to" */}
       <span
         style={{
-          transitionDelay: "700ms",
+          transitionDelay: "680ms",
           transform: isVisible ? "translateY(0)" : "translateY(20px)",
           opacity: isVisible ? 1 : 0,
           filter: isVisible ? "blur(0px)" : "blur(5px)",
@@ -150,24 +171,20 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
         to
       </span>
 
-      {/* Dynamic Animated Word in Calmer, Slower Motion */}
+      {/* Dynamic Typewriter Words in Slow Typing Motion */}
       <span
         style={{
-          transitionDelay: "820ms",
+          transitionDelay: "800ms",
           transform: isVisible ? "translateY(0)" : "translateY(20px)",
           opacity: isVisible ? 1 : 0,
         }}
-        className="inline-block transition-all duration-1000 ease-out"
+        className="inline-block transition-all duration-1000 ease-out min-w-[260px] sm:min-w-[420px] text-left align-baseline"
       >
-        <span
-          className={`inline-block transition-all duration-600 ease-in-out transform ${
-            isWordFading
-              ? "opacity-0 -translate-y-2 scale-98 blur-sm"
-              : "opacity-100 translate-y-0 scale-100 blur-0"
-          } bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold`}
-        >
-          {dynamicWords[rotatingIndex]}
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold">
+          {typedText}
         </span>
+        {/* Blinking Electric Blue Typewriter Cursor */}
+        <span className="inline-block w-[3px] sm:w-[4px] h-[0.75em] bg-[#3B82F6] ml-1 align-baseline animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.9)]" />
       </span>
     </h1>
   );
