@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Building2, ShieldCheck } from "lucide-react";
+import { Building2, ShieldCheck, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
@@ -131,6 +131,54 @@ export default async function SettingsPage() {
             <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded">
               ACTIVE
             </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Google Gemini AI Configuration */}
+      <Card className="border-blue-200 bg-blue-50/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            <CardTitle className="text-blue-950">
+              Google Gemini AI Engine
+            </CardTitle>
+          </div>
+          <p className="text-xs text-slate-500">
+            Cloud generative AI integration for autonomous project planning and sprint decomposition
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs text-slate-700">
+          <div className="flex items-center justify-between p-3.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+            <div>
+              <p className="font-semibold text-slate-900">Model Engine: Google Gemini 1.5 Flash</p>
+              <p className="text-[11px] text-slate-500">
+                Deconstructs natural language product objectives into Linear issues, epics, and acceptance criteria.
+              </p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded">
+              GEMINI 1.5 FLASH
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-lg bg-white border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-900 text-xs">
+                Free Gemini API Key Setup
+              </span>
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1 font-medium"
+              >
+                <span>Generate key on Google AI Studio</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Connect your Gemini API key in the AI Project Planner or add <code className="px-1.5 py-0.5 bg-slate-100 rounded text-blue-700 font-mono text-[10px]">GEMINI_API_KEY</code> to your <code className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-800 font-mono text-[10px]">.env</code> file.
+            </p>
           </div>
         </CardContent>
       </Card>
