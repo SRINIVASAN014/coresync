@@ -21,30 +21,29 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     "scale engineering",
   ];
 
-  // 1. Trigger live entrance on initial reload
+  // 1. Trigger live entrance gracefully on initial reload
   React.useEffect(() => {
-    // Trigger entrance animation immediately on reload/mount
     const timeout = setTimeout(() => {
       setIsVisible(true);
-    }, 100);
+    }, 150);
 
     return () => clearTimeout(timeout);
   }, []);
 
-  // 2. Continuous rotating action words (every 2.8s)
+  // 2. Calmer, slower rotating action words (cycles every 4.8s with a smooth 600ms fade)
   React.useEffect(() => {
     const wordTimer = setInterval(() => {
       setIsWordFading(true);
       setTimeout(() => {
         setRotatingIndex((prev) => (prev + 1) % dynamicWords.length);
         setIsWordFading(false);
-      }, 350);
-    }, 2800);
+      }, 600); // 600ms smooth cross-fade
+    }, 4800); // Relaxed 4.8 second reading interval
 
     return () => clearInterval(wordTimer);
   }, [dynamicWords.length]);
 
-  // 3. Live responsiveness on Scroll Down and Scroll Up
+  // 3. Smooth, relaxed responsiveness on Scroll Down and Scroll Up
   React.useEffect(() => {
     let ticking = false;
 
@@ -60,13 +59,12 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Intersection Observer to re-trigger live wave when scrolling back up/down into viewport
+    // Intersection Observer to smoothly re-bloom when scrolling back into viewport
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
         } else {
-          // Reset slightly so it re-blooms when scrolled back into view
           setIsVisible(false);
         }
       },
@@ -83,15 +81,15 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
     };
   }, []);
 
-  // Calculate subtle live scroll parallax & expansion (smooth depth effect as you scroll down and up)
-  const scrollOffset = Math.min(scrollY * 0.08, 25);
-  const scrollOpacity = Math.max(1 - scrollY * 0.0018, 0.4);
+  // Smooth gentle parallax scroll factor
+  const scrollOffset = Math.min(scrollY * 0.05, 20);
+  const scrollOpacity = Math.max(1 - scrollY * 0.0015, 0.45);
 
   const firstLineWords = [
-    { text: "is", delay: 120 },
-    { text: "a", delay: 180 },
-    { text: "better", delay: 240 },
-    { text: "way", delay: 300 },
+    { text: "is", delay: 220 },
+    { text: "a", delay: 340 },
+    { text: "better", delay: 460 },
+    { text: "way", delay: 580 },
   ];
 
   return (
@@ -101,17 +99,17 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
         transform: `translateY(-${scrollOffset}px)`,
         opacity: scrollOpacity,
       }}
-      className={`max-w-5xl text-5xl sm:text-7xl font-bold tracking-tight mb-8 leading-[1.15] select-none transition-transform duration-150 ease-out ${className}`}
+      className={`max-w-5xl text-5xl sm:text-7xl font-bold tracking-tight mb-8 leading-[1.15] select-none transition-transform duration-300 ease-out ${className}`}
     >
-      {/* Brand Name: CoreSync with Live Glow */}
+      {/* Brand Name: CoreSync with Calibrated Glow */}
       <span
         style={{
-          transitionDelay: "60ms",
-          transform: isVisible ? "translateY(0) scale(1)" : "translateY(24px) scale(0.96)",
+          transitionDelay: "100ms",
+          transform: isVisible ? "translateY(0) scale(1)" : "translateY(20px) scale(0.97)",
           opacity: isVisible ? 1 : 0,
-          filter: isVisible ? "blur(0px)" : "blur(8px)",
+          filter: isVisible ? "blur(0px)" : "blur(6px)",
         }}
-        className="inline-block transition-all duration-700 ease-out mr-3 group cursor-default"
+        className="inline-block transition-all duration-1000 ease-out mr-3 group cursor-default"
       >
         <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.25)]">
           Core
@@ -121,17 +119,17 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
         </span>
       </span>
 
-      {/* Static Line 1 Words (Staggered live reveal on reload and scroll) */}
+      {/* Static Line 1 Words (Smooth, slower staggered reveal on reload and scroll) */}
       {firstLineWords.map((item, idx) => (
         <span
           key={idx}
           style={{
             transitionDelay: `${item.delay}ms`,
-            transform: isVisible ? "translateY(0)" : "translateY(24px)",
+            transform: isVisible ? "translateY(0)" : "translateY(20px)",
             opacity: isVisible ? 1 : 0,
-            filter: isVisible ? "blur(0px)" : "blur(6px)",
+            filter: isVisible ? "blur(0px)" : "blur(5px)",
           }}
-          className="inline-block transition-all duration-700 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3 hover:text-white hover:-translate-y-1 transition-transform cursor-default"
+          className="inline-block transition-all duration-1000 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3 hover:text-white hover:-translate-y-1 transition-transform cursor-default"
         >
           {item.text}
         </span>
@@ -139,32 +137,32 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
       <br className="hidden sm:block" />
 
-      {/* Second Line: "to" + Dynamic Action Words in Motion */}
+      {/* Second Line: "to" */}
       <span
         style={{
-          transitionDelay: "360ms",
-          transform: isVisible ? "translateY(0)" : "translateY(24px)",
+          transitionDelay: "700ms",
+          transform: isVisible ? "translateY(0)" : "translateY(20px)",
           opacity: isVisible ? 1 : 0,
-          filter: isVisible ? "blur(0px)" : "blur(6px)",
+          filter: isVisible ? "blur(0px)" : "blur(5px)",
         }}
-        className="inline-block transition-all duration-700 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3"
+        className="inline-block transition-all duration-1000 ease-out text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/70 mr-3"
       >
         to
       </span>
 
-      {/* Dynamic Animated Word in Continuous Motion */}
+      {/* Dynamic Animated Word in Calmer, Slower Motion */}
       <span
         style={{
-          transitionDelay: "420ms",
-          transform: isVisible ? "translateY(0)" : "translateY(24px)",
+          transitionDelay: "820ms",
+          transform: isVisible ? "translateY(0)" : "translateY(20px)",
           opacity: isVisible ? 1 : 0,
         }}
-        className="inline-block transition-all duration-700 ease-out"
+        className="inline-block transition-all duration-1000 ease-out"
       >
         <span
-          className={`inline-block transition-all duration-350 transform ${
+          className={`inline-block transition-all duration-600 ease-in-out transform ${
             isWordFading
-              ? "opacity-0 -translate-y-3 scale-95 blur-sm"
+              ? "opacity-0 -translate-y-2 scale-98 blur-sm"
               : "opacity-100 translate-y-0 scale-100 blur-0"
           } bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold`}
         >
