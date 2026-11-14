@@ -16,14 +16,17 @@ export default async function LandingPage() {
   const session = await getServerSession();
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white selection:bg-[#3B82F6]/30 font-sans flex flex-col">
-      {/* 1. Header with exact CoreSync logo colors */}
+    <div className="min-h-screen bg-[#080808] text-white selection:bg-[#3B82F6]/30 font-sans flex flex-col relative">
+      {/* 1. Global Persistent Violet Glow — Follows and stays visible on scroll */}
+      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[480px] bg-gradient-to-tr from-violet-600/22 via-[#8B5CF6]/20 to-[#3B82F6]/15 blur-[140px] rounded-full pointer-events-none z-0" />
+
+      {/* 2. Header with exact CoreSync logo colors */}
       <Navbar />
 
-      {/* 2. Hero Section harmonized with brand colors */}
-      <div className="flex-1 flex flex-col justify-center relative overflow-hidden py-24 sm:py-32">
-        {/* Soft, Balanced Violet Center Ambient Glow with Subtle Motion */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] bg-gradient-to-tr from-violet-600/25 via-[#8B5CF6]/22 to-[#3B82F6]/18 blur-[120px] rounded-full pointer-events-none transition-all duration-1000" />
+      {/* 3. Hero Section */}
+      <div className="flex-1 flex flex-col justify-center relative py-24 sm:py-32 z-10">
+        {/* Soft, Balanced Violet Center Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] bg-gradient-to-tr from-violet-600/25 via-[#8B5CF6]/22 to-[#3B82F6]/18 blur-[120px] rounded-full pointer-events-none" />
 
         <main className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto">
           {/* Top Pill matching electric blue dot */}
@@ -58,8 +61,10 @@ export default async function LandingPage() {
         </main>
       </div>
 
-      {/* 3. Value Propositions & Enterprise Capabilities */}
+      {/* 4. Value Propositions & Enterprise Capabilities with Scrolled Violet Glow */}
       <section id="features" className="relative z-10 max-w-6xl mx-auto px-6 py-20 border-t border-white/5 w-full">
+        {/* Scrolled Down Center Violet Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[400px] bg-gradient-to-tr from-violet-600/22 via-[#8B5CF6]/20 to-[#6366F1]/15 blur-[130px] rounded-full pointer-events-none -z-10" />
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
             Engineered for High-Velocity Engineering Teams
