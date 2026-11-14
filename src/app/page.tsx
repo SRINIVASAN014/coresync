@@ -34,7 +34,7 @@ export default async function LandingPage() {
 
           {/* Subtitle */}
           <p className="max-w-2xl text-lg sm:text-xl text-[#8A8F98] mb-12 leading-relaxed">
-            Meet the new standard for modern software development. Streamline issues, sprints, and product roadmaps with an autonomous AI workspace.
+            Empower your engineering teams and autonomous AI agents to collaborate with effortless speed, absolute security, and crystal-clear visibility. Turn ambitious goals into completed sprints.
           </p>
 
           {/* Action Buttons */}
@@ -61,10 +61,10 @@ export default async function LandingPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[400px] bg-gradient-to-tr from-violet-600/22 via-[#8B5CF6]/20 to-[#6366F1]/15 blur-[130px] rounded-full pointer-events-none -z-10" />
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
-            Engineered for High-Velocity Engineering Teams
+            Engineered for Visionary Engineering Organizations
           </h2>
           <p className="text-sm text-[#8A8F98]">
-            Multi-company data isolation, autonomous AI project decomposition, and human-governed execution.
+            Built with multi-tenant mathematical isolation, autonomous AI project decomposition, and trusted human-governed execution.
           </p>
         </div>
 
@@ -73,9 +73,9 @@ export default async function LandingPage() {
             <div className="w-10 h-10 rounded-xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 flex items-center justify-center text-[#3B82F6]">
               <Building2 className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Multi-Company Workspaces</h3>
+            <h3 className="text-base font-semibold text-white">Unbreakable Multi-Company Isolation</h3>
             <p className="text-xs text-[#8A8F98] leading-relaxed">
-              Strict multi-tenant security ensures Company A can never access Company B&apos;s projects, tasks, or internal documentation.
+              Enterprise-grade tenant boundaries guarantee Company A can never access Company B&apos;s projects, code artifacts, or proprietary workflows.
             </p>
           </div>
 
@@ -83,9 +83,9 @@ export default async function LandingPage() {
             <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 border border-[#6366F1]/20 flex items-center justify-center text-[#6366F1]">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">AI Project Planner</h3>
+            <h3 className="text-base font-semibold text-white">Visionary AI Project Planner</h3>
             <p className="text-xs text-[#8A8F98] leading-relaxed">
-              Convert product briefs into milestones, epics, and Kanban tasks with dependencies and timeline estimates in seconds.
+              Convert high-level company missions into milestones, linked epics, and actionable Kanban tasks with dependency maps in seconds.
             </p>
           </div>
 
@@ -93,9 +93,9 @@ export default async function LandingPage() {
             <div className="w-10 h-10 rounded-xl bg-[#A855F7]/10 border border-[#A855F7]/20 flex items-center justify-center text-[#A855F7]">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-semibold text-white">Human Approval Center</h3>
+            <h3 className="text-base font-semibold text-white">Human-Empowered AI Governance</h3>
             <p className="text-xs text-[#8A8F98] leading-relaxed">
-              AI agents cannot unilaterally execute changes. Every proposed assignment or sprint modification requires human sign-off.
+              Empower autonomous AI agents with total peace of mind. Every AI-proposed sprint rebalance or task assignment requires manager authorization.
             </p>
           </div>
         </div>

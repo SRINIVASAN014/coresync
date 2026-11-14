@@ -14,17 +14,17 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
 
   const words = React.useMemo(
     () => [
-      "build products",
-      "ship software",
-      "manage sprints",
-      "orchestrate AI",
-      "scale engineering",
+      "build extraordinary products",
+      "ship breakthrough software",
+      "empower high-velocity teams",
+      "orchestrate trusted AI agents",
+      "scale without limits",
     ],
     []
   );
 
   const [wordIndex, setWordIndex] = React.useState(0);
-  const [typedText, setTypedText] = React.useState("build products");
+  const [typedText, setTypedText] = React.useState("build extraordinary products");
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   // 1. Mark component as mounted on client only (prevents hydration mismatch)
@@ -194,7 +194,7 @@ export function LiveWordsHeadline({ className = "" }: LiveWordsHeadlineProps) {
           suppressHydrationWarning
           className="bg-clip-text text-transparent bg-gradient-to-r from-[#4B9CFF] via-[#818CF8] to-[#C084FC] drop-shadow-[0_0_20px_rgba(99,102,241,0.35)] font-extrabold"
         >
-          {isMounted ? typedText : "build products"}
+          {isMounted ? typedText : "build extraordinary products"}
         </span>
         {/* Blinking Electric Blue Typewriter Cursor */}
         <span className="inline-block w-[3px] sm:w-[4px] h-[0.75em] bg-[#3B82F6] ml-1 align-baseline animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.9)]" />

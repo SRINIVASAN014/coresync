@@ -1,22 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Search, Bell, Sparkles, Plus, Command } from "lucide-react";
+import Link from "next/link";
+import { Search, Bell, Sparkles, Plus, Command, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface TopNavProps {
   title?: string;
-  onNewProject?: () => void;
-  onOpenAIPlanner?: () => void;
+  onNewIssue?: () => void;
 }
 
 export function TopNav({
   title = "Overview",
-  onNewProject,
-  onOpenAIPlanner,
+  onNewIssue,
 }: TopNavProps) {
   return (
-    <header className="h-16 border-b border-white/10 bg-[#080808]/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-16 border-b border-white/10 bg-[#080808]/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 select-none">
       {/* Left: Breadcrumbs / Title */}
       <div className="flex items-center gap-3">
         <h1 className="text-base font-semibold text-white tracking-tight">
@@ -29,7 +28,7 @@ export function TopNav({
         <Search className="w-4 h-4 text-neutral-500 absolute left-3 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search projects, tasks, or ask AI..."
+          placeholder="Search issues, projects, or command (Ctrl+K)..."
           className="w-full h-9 pl-9 pr-14 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition"
         />
         <div className="absolute right-2.5 flex items-center gap-0.5 text-[10px] text-neutral-500 border border-white/10 px-1.5 py-0.5 rounded bg-black/40">
@@ -39,36 +38,34 @@ export function TopNav({
       </div>
 
       {/* Right: Quick Action Buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {/* Run AI Planner Button */}
-        <Button
-          variant="ai"
-          size="sm"
-          onClick={onOpenAIPlanner}
-          className="shadow-sm"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>AI Planner</span>
-        </Button>
+        <Link href="/dashboard/ai-planner">
+          <Button variant="ai" size="sm" className="shadow-sm h-8 text-xs">
+            <Sparkles className="w-3.5 h-3.5 mr-1" />
+            <span>AI Planner</span>
+          </Button>
+        </Link>
 
         {/* Create Project Button */}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onNewProject}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>New Project</span>
-        </Button>
+        <Link href="/dashboard/projects">
+          <Button variant="secondary" size="sm" className="h-8 text-xs">
+            <FolderPlus className="w-3.5 h-3.5 mr-1" />
+            <span>Projects</span>
+          </Button>
+        </Link>
 
         {/* Notifications */}
-        <button
-          className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/5 transition relative"
-          aria-label="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-        </button>
+        <Link href="/dashboard/approvals">
+          <button
+            className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/5 transition relative ml-1"
+            aria-label="Approvals & Notifications"
+            title="Approvals & Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+          </button>
+        </Link>
       </div>
     </header>
   );
