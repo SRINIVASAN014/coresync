@@ -3,21 +3,23 @@ import { getServerSession } from "next-auth";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 export default async function Navbar() {
-  // Fetch the active user session securely from the server
+  // Fetch active user session securely from the server
   const session = await getServerSession();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#080808]/80 backdrop-blur-xl transition-all">
+    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#080808]/85 backdrop-blur-xl transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
-        {/* Left Side: Brand Logo & Links */}
+        {/* Left: Official Brand Logo matching the uploaded screenshot */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            {/* Blue to Purple Gradient Badge with Sparkle */}
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3B82F6] via-[#6366F1] to-[#A855F7] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(59,130,246,0.35)] group-hover:scale-105 transition-transform">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-white">
-              Core<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Sync</span>
+            {/* Crisp Pure White 'Core' + Electric Blue 'Sync' */}
+            <span className="text-xl font-bold tracking-tight text-white flex items-center">
+              Core<span className="text-[#3B82F6]">Sync</span>
             </span>
           </Link>
           
@@ -38,7 +40,7 @@ export default async function Navbar() {
           </nav>
         </div>
         
-        {/* Right Side: Dynamic Authentication UI */}
+        {/* Right Side: Authentication UI */}
         <div className="flex items-center gap-3">
           {session ? (
             <div className="flex items-center gap-3">
@@ -49,10 +51,10 @@ export default async function Navbar() {
                 <img 
                   src={session.user.image} 
                   alt="Profile" 
-                  className="w-8 h-8 rounded-full border border-white/10 ring-1 ring-indigo-500/30"
+                  className="w-8 h-8 rounded-full border border-white/10 ring-1 ring-[#3B82F6]/40"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-xs font-bold text-white border border-white/10">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#3B82F6] to-[#8B5CF6] flex items-center justify-center text-xs font-bold text-white border border-white/10">
                   {session.user?.name?.charAt(0) || "U"}
                 </div>
               )}
