@@ -1,10 +1,32 @@
+import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Settings, Building2, ShieldCheck, Database, Key } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 
 export default async function SettingsPage() {
-  const org = await db.organization.findFirst();
+  const session = await getServerSession(authOptions);
+  const cookieStore = await cookies();
+  const activeOrgCookie = cookieStore.get("coresync_active_org_id")?.value;
+
+  let org = null;
+  if (activeOrgCookie) {
+    org = await db.organization.findUnique({
+      where: { id: activeOrgCookie },
+    });
+  }
+  if (!org && session?.user?.id) {
+    const member = await db.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      include: { organization: true },
+    });
+    org = member?.organization || null;
+  }
+  if (!org) {
+    org = await db.organization.findFirst();
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto select-none">
@@ -21,7 +43,7 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-indigo-400" />
+            <Building2 className="w-4 h-4 text-[#3B82F6]" />
             <CardTitle>Organization Details</CardTitle>
           </div>
           <p className="text-xs text-neutral-400">
@@ -91,7 +113,7 @@ export default async function SettingsPage() {
             <div>
               <p className="font-semibold text-white">Multi-Tenant Logical Partitioning</p>
               <p className="text-[11px] text-neutral-400">
-                All projects, tasks, and audit logs are strictly scoped by Organization ID.
+                All projects, tasks, and audit logs are strictly scoped by Organization ID ({org?.id}).
               </p>
             </div>
             <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">

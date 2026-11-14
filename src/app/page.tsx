@@ -40,7 +40,7 @@ export default async function LandingPage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link
-              href={session ? "/dashboard" : "/api/auth/signin"}
+              href={session ? "/dashboard" : "/login"}
               className="bg-white text-black px-7 py-3 rounded-full font-semibold hover:bg-neutral-200 transition flex items-center gap-2 shadow-[0_0_25px_rgba(255,255,255,0.15)] text-sm active:scale-95"
             >
               Get started

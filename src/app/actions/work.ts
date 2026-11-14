@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
-import { TaskStatus, Priority, ProjectStatus } from "@prisma/client";
+import { TaskStatus, Priority, ProjectStatus, Role } from "@prisma/client";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 
@@ -276,15 +278,31 @@ export async function createProject(data: {
   priority?: Priority;
 }) {
   try {
-    const org = await db.organization.findFirst();
-    if (!org) throw new Error("No organization found");
-
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     const owner = await db.user.findFirst({
       where: session?.user?.email ? { email: session.user.email } : undefined,
     });
 
-    if (!owner) throw new Error("User required");
+    if (!owner) throw new Error("Authenticated user required to create a project");
+
+    // Resolve active organization from cookie or user's first membership
+    const cookieStore = await cookies();
+    const activeOrgId = cookieStore.get("coresync_active_org_id")?.value;
+
+    let targetOrgId = activeOrgId;
+    if (!targetOrgId) {
+      const membership = await db.organizationMember.findFirst({
+        where: { userId: owner.id },
+      });
+      targetOrgId = membership?.organizationId;
+    }
+
+    if (!targetOrgId) {
+      const firstOrg = await db.organization.findFirst();
+      targetOrgId = firstOrg?.id;
+    }
+
+    if (!targetOrgId) throw new Error("No organization found to create project in");
 
     const project = await db.project.create({
       data: {
@@ -293,8 +311,30 @@ export async function createProject(data: {
         description: data.description || "",
         priority: data.priority || Priority.MEDIUM,
         status: ProjectStatus.ACTIVE,
-        organizationId: org.id,
+        organizationId: targetOrgId,
         ownerId: owner.id,
+      },
+    });
+
+    // Automatically add creator as Project Member with OWNER role
+    await db.projectMember.create({
+      data: {
+        projectId: project.id,
+        userId: owner.id,
+        role: Role.OWNER,
+      },
+    });
+
+    // Create Audit Log
+    await db.auditLog.create({
+      data: {
+        action: "PROJECT_CREATED",
+        entity: "Project",
+        entityId: project.id,
+        organizationId: targetOrgId,
+        userId: owner.id,
+        userEmail: owner.email,
+        details: JSON.stringify({ key: project.key, name: project.name }),
       },
     });
 
@@ -303,6 +343,171 @@ export async function createProject(data: {
     return { success: true, project };
   } catch (error: any) {
     console.error("Failed to create project:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Switch active workspace (tenant isolation context)
+ */
+export async function switchActiveOrganization(organizationId: string) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) throw new Error("Authentication required");
+
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) throw new Error("User not found");
+
+    // Verify user belongs to this organization
+    const membership = await db.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId,
+          userId: user.id,
+        },
+      },
+      include: { organization: true },
+    });
+
+    if (!membership) {
+      throw new Error("You do not have access to this organization");
+    }
+
+    const cookieStore = await cookies();
+    cookieStore.set("coresync_active_org_id", organizationId, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/projects");
+    revalidatePath("/dashboard/teams");
+    revalidatePath("/dashboard/settings");
+
+    return { success: true, organization: membership.organization };
+  } catch (error: any) {
+    console.error("Failed to switch organization:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Create a new enterprise organization workspace
+ */
+export async function createOrganization(data: {
+  name: string;
+  industry?: string;
+}) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) throw new Error("Authentication required");
+
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) throw new Error("User not found");
+
+    const baseSlug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const newOrg = await db.$transaction(async (tx) => {
+      const org = await tx.organization.create({
+        data: {
+          name: data.name.trim(),
+          slug: uniqueSlug,
+          industry: data.industry?.trim() || "Technology & Software",
+        },
+      });
+
+      await tx.organizationMember.create({
+        data: {
+          organizationId: org.id,
+          userId: user.id,
+          role: Role.OWNER,
+        },
+      });
+
+      const team = await tx.team.create({
+        data: {
+          name: "Engineering",
+          description: "Primary engineering and architecture team",
+          organizationId: org.id,
+        },
+      });
+
+      await tx.teamMember.create({
+        data: {
+          teamId: team.id,
+          userId: user.id,
+          role: "LEAD",
+        },
+      });
+
+      const project = await tx.project.create({
+        data: {
+          name: "Core Platform",
+          key: "CORE",
+          description: "Primary feature sprint backlog",
+          status: ProjectStatus.ACTIVE,
+          organizationId: org.id,
+          ownerId: user.id,
+        },
+      });
+
+      await tx.projectMember.create({
+        data: {
+          projectId: project.id,
+          userId: user.id,
+          role: Role.OWNER,
+        },
+      });
+
+      await tx.task.create({
+        data: {
+          key: "CORE-1",
+          title: `Welcome to ${org.name} Workspace`,
+          description: "This workspace has full mathematical tenant isolation.",
+          status: TaskStatus.TODO,
+          priority: Priority.HIGH,
+          projectId: project.id,
+          creatorId: user.id,
+          assigneeId: user.id,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: "WORKSPACE_CREATED",
+          entity: "Organization",
+          entityId: org.id,
+          organizationId: org.id,
+          userId: user.id,
+          userEmail: user.email,
+          details: JSON.stringify({ name: org.name, slug: org.slug }),
+        },
+      });
+
+      return org;
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set("coresync_active_org_id", newOrg.id, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/projects");
+    return { success: true, organization: newOrg };
+  } catch (error: any) {
+    console.error("Failed to create organization:", error);
     return { success: false, error: error.message };
   }
 }

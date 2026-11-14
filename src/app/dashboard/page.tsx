@@ -1,4 +1,6 @@
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
+import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import {
   FolderKanban,
@@ -17,13 +19,34 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { db } from "@/lib/db";
 
 export default async function DashboardPage() {
-  const session = await getServerSession();
-  const userName = session?.user?.name || "Srinivasan Sathurappan";
+  const session = await getServerSession(authOptions);
+  const userName = session?.user?.name || "Enterprise User";
 
-  // 1. Fetch Real Live Data from Neon Cloud PostgreSQL
-  const org = await db.organization.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
+  // 1. Resolve Active Multi-Tenant Organization from Cookie / Session
+  const cookieStore = await cookies();
+  const activeOrgCookie = cookieStore.get("coresync_active_org_id")?.value;
+
+  let activeOrg = null;
+  if (activeOrgCookie) {
+    activeOrg = await db.organization.findUnique({
+      where: { id: activeOrgCookie },
+    });
+  }
+  if (!activeOrg && session?.user?.id) {
+    const member = await db.organizationMember.findFirst({
+      where: { userId: session.user.id },
+      include: { organization: true },
+    });
+    activeOrg = member?.organization || null;
+  }
+  if (!activeOrg) {
+    activeOrg = await db.organization.findFirst({
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  const orgId = activeOrg?.id;
+  const orgName = activeOrg?.name || "Global CyberTech Solutions";
 
   const [
     projects,
@@ -34,6 +57,7 @@ export default async function DashboardPage() {
     urgentTasksCount,
   ] = await Promise.all([
     db.project.findMany({
+      where: orgId ? { organizationId: orgId } : undefined,
       orderBy: { createdAt: "desc" },
       include: {
         tasks: true,
@@ -42,15 +66,15 @@ export default async function DashboardPage() {
         },
       },
     }),
-    db.project.count(),
-    db.task.count(),
-    db.task.count({ where: { status: "DONE" } }),
+    db.project.count({ where: orgId ? { organizationId: orgId } : undefined }),
+    db.task.count({ where: orgId ? { project: { organizationId: orgId } } : undefined }),
+    db.task.count({ where: { status: "DONE", ...(orgId ? { project: { organizationId: orgId } } : {}) } }),
     db.approvalRequest.findMany({
-      where: { status: "PENDING" },
+      where: { status: "PENDING", ...(orgId ? { organizationId: orgId } : {}) },
       take: 3,
       orderBy: { createdAt: "desc" },
     }),
-    db.task.count({ where: { priority: "URGENT", status: { not: "DONE" } } }),
+    db.task.count({ where: { priority: "URGENT", status: { not: "DONE" }, ...(orgId ? { project: { organizationId: orgId } } : {}) } }),
   ]);
 
   const velocity =
@@ -66,7 +90,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2 mb-1">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
             <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
-              Live Cloud Database • {org?.name || "Global Enterprise"}
+              Live Cloud Database • {orgName}
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
@@ -169,7 +193,7 @@ export default async function DashboardPage() {
           <div>
             <CardTitle>Active Enterprise Projects</CardTitle>
             <p className="text-xs text-neutral-400 mt-1">
-              Real-time synchronization across {org?.name}
+              Real-time synchronization across {orgName}
             </p>
           </div>
           <Link href="/dashboard/projects">
@@ -305,7 +329,7 @@ export default async function DashboardPage() {
                 Multi-Tenant Isolation Verified
               </p>
               <p className="text-[11px] text-neutral-400 leading-relaxed">
-                All projects, tasks, and audit logs are partitioned under Organization ID: <span className="font-mono text-indigo-300">{org?.id || "org_root"}</span>.
+                All projects, tasks, and audit logs are partitioned under Organization ID: <span className="font-mono text-indigo-300">{orgId || "org_root"}</span>.
               </p>
             </div>
             <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
