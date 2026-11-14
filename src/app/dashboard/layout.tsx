@@ -94,7 +94,7 @@ export default async function DashboardLayout({
   const allOrganizations = Array.from(uniqueOrgsMap.values());
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#080808]">
+    <div className="flex h-screen overflow-hidden bg-white text-slate-900">
       {/* 1. Left Sidebar Navigation with Live Multi-Tenant Workspace Switcher */}
       <Sidebar
         currentOrgName={orgName}
@@ -106,9 +106,9 @@ export default async function DashboardLayout({
       />
 
       {/* 2. Main Content Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8FAFC]">
         <TopNav title={`${orgName}`} />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#090A0D]">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-[#F8FAFC] text-slate-900">
           {children}
         </main>
       </div>

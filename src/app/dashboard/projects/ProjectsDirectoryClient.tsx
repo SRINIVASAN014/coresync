@@ -67,12 +67,12 @@ export function ProjectsDirectoryClient({
   return (
     <div className="space-y-6 max-w-7xl mx-auto select-none">
       {/* 1. Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Projects Directory
           </h1>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             All active engineering roadmaps and boards across {orgName}
           </p>
         </div>
@@ -100,11 +100,11 @@ export function ProjectsDirectoryClient({
           return (
             <Card
               key={p.id}
-              className="hover:border-white/20 transition flex flex-col justify-between"
+              className="hover:border-blue-300 hover:shadow-md transition flex flex-col justify-between"
             >
               <CardHeader className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
                     {p.key}
                   </span>
                   <Badge
@@ -122,12 +122,12 @@ export function ProjectsDirectoryClient({
 
                 <Link
                   href={`/dashboard/project/${p.id}`}
-                  className="text-base font-semibold text-white hover:text-indigo-300 transition block truncate"
+                  className="text-base font-bold text-slate-900 hover:text-blue-600 transition block truncate"
                 >
                   {p.name}
                 </Link>
 
-                <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                   {p.description || "No project description provided."}
                 </p>
               </CardHeader>
@@ -135,24 +135,24 @@ export function ProjectsDirectoryClient({
               <CardContent className="space-y-4 pt-2">
                 {/* Progress */}
                 <div>
-                  <div className="flex justify-between text-[11px] text-neutral-400 mb-1 font-mono">
+                  <div className="flex justify-between text-[11px] text-slate-500 mb-1 font-mono">
                     <span>
                       {completedCount}/{taskCount} tasks done
                     </span>
-                    <span>{progress}%</span>
+                    <span className="text-slate-700 font-semibold">{progress}%</span>
                   </div>
-                  <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
+                      className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-300 rounded-full"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-neutral-400">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
                   <span>Lead: {p.owner?.name || "Admin"}</span>
                   <Link href={`/dashboard/project/${p.id}`}>
-                    <Button variant="outline" size="sm" className="h-7 text-xs">
+                    <Button variant="outline" size="sm" className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                       Open Board <ArrowRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
@@ -167,16 +167,16 @@ export function ProjectsDirectoryClient({
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <div className="relative z-50 w-full max-w-lg rounded-xl border border-white/10 bg-[#0E1015] p-6 shadow-2xl animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-4 border-b border-white/5">
-              <h2 className="text-base font-bold text-white">Create New Project</h2>
+          <div className="relative z-50 w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 text-slate-900">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-900">Create New Project</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-neutral-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -184,7 +184,7 @@ export function ProjectsDirectoryClient({
 
             <form onSubmit={handleCreate} className="space-y-4 pt-4">
               <div>
-                <label className="text-xs font-medium text-neutral-300 block mb-1">
+                <label className="text-xs font-medium text-slate-700 block mb-1">
                   Project Name
                 </label>
                 <input
@@ -192,13 +192,13 @@ export function ProjectsDirectoryClient({
                   placeholder="e.g. Payments & Billing Gateway"
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
-                  className="w-full bg-[#14161C] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-neutral-300 block mb-1">
+                  <label className="text-xs font-medium text-slate-700 block mb-1">
                     Project Key (Prefix)
                   </label>
                   <input
@@ -207,18 +207,18 @@ export function ProjectsDirectoryClient({
                     placeholder="e.g. PAY"
                     value={key}
                     onChange={(e) => setKey(e.target.value.toUpperCase())}
-                    className="w-full bg-[#14161C] border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono uppercase focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-neutral-300 block mb-1">
+                  <label className="text-xs font-medium text-slate-700 block mb-1">
                     Priority
                   </label>
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as Priority)}
-                    className="w-full bg-[#14161C] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none cursor-pointer"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -229,7 +229,7 @@ export function ProjectsDirectoryClient({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-neutral-300 block mb-1">
+                <label className="text-xs font-medium text-slate-700 block mb-1">
                   Description
                 </label>
                 <textarea
@@ -237,11 +237,11 @@ export function ProjectsDirectoryClient({
                   placeholder="Project goals, milestones, or architecture notes..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-[#14161C] border border-white/10 rounded-lg p-3 text-xs text-white placeholder:text-neutral-500 focus:outline-none resize-none leading-relaxed"
+                  className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-white/5">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <Button
                   variant="ghost"
                   size="sm"

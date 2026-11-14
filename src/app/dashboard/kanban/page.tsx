@@ -30,8 +30,8 @@ export default async function GlobalKanbanPage() {
   if (projects.length === 0) {
     return (
       <div className="p-12 text-center space-y-4 max-w-md mx-auto">
-        <h2 className="text-xl font-bold text-white">No Projects Available</h2>
-        <p className="text-xs text-neutral-400">
+        <h2 className="text-xl font-bold text-slate-900">No Projects Available</h2>
+        <p className="text-xs text-slate-500">
           Create a project to start managing tasks on the Kanban board.
         </p>
         <Link href="/dashboard/projects">

@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Users, Mail, Shield, UserPlus } from "lucide-react";
+import { Mail, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -62,12 +62,12 @@ export default async function TeamsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto select-none">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Teams & Employees
           </h1>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Manage organization members, RBAC permissions, and team access for {activeOrg?.name}
           </p>
         </div>
@@ -81,27 +81,27 @@ export default async function TeamsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Organization Members ({members.length})</CardTitle>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-slate-500">
             Enterprise seats active under multi-tenant isolation
           </p>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-slate-100">
             {members.map((member) => (
               <div
                 key={member.id}
-                className="py-3.5 flex items-center justify-between gap-4"
+                className="py-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/60 px-2 rounded-lg transition"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#3B82F6] to-[#8B5CF6] flex items-center justify-center text-xs font-bold text-white border border-white/10 shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 font-bold border border-blue-200 flex items-center justify-center text-xs shadow-2xs">
                     {member.user?.name ? member.user.name.charAt(0) : "U"}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-slate-900">
                       {member.user?.name || "Team Member"}
                     </p>
-                    <p className="text-xs text-neutral-400 flex items-center gap-1.5 font-mono">
-                      <Mail className="w-3 h-3 text-neutral-500" />
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5 font-mono">
+                      <Mail className="w-3 h-3 text-slate-400" />
                       {member.user?.email}
                     </p>
                   </div>
@@ -120,7 +120,7 @@ export default async function TeamsPage() {
                   >
                     {member.role}
                   </Badge>
-                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                  <Button variant="outline" size="sm" className="h-7 text-xs border-slate-200 text-slate-700 hover:bg-slate-50">
                     Permissions
                   </Button>
                 </div>

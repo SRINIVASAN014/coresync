@@ -80,23 +80,23 @@ export function ProjectBoardClient({
   return (
     <div className="space-y-6 max-w-7xl mx-auto select-none">
       {/* 1. Project Header & Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <Link
             href="/dashboard"
-            className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 mb-2 transition"
+            className="text-xs text-slate-500 hover:text-blue-600 flex items-center gap-1 mb-2 transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Workspace
           </Link>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded">
+            <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded">
               {project.key}
             </span>
-            <h1 className="text-2xl font-bold tracking-tight text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               {project.name}
             </h1>
           </div>
-          <p className="text-xs text-neutral-400 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             {project.description}
           </p>
         </div>
@@ -111,7 +111,7 @@ export function ProjectBoardClient({
           >
             <Plus className="w-3.5 h-3.5 mr-1" />
             <span>New Issue</span>
-            <kbd className="ml-1.5 px-1 py-0.2 rounded bg-black/10 text-[10px] font-mono">
+            <kbd className="ml-1.5 px-1 py-0.2 rounded bg-white/20 text-[10px] font-mono">
               C
             </kbd>
           </Button>
@@ -119,24 +119,24 @@ export function ProjectBoardClient({
       </div>
 
       {/* 2. Linear-Style Quick Filter Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0C0E12] p-2 rounded-xl border border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
         <div className="flex items-center gap-2 flex-1 max-w-md">
-          <Search className="w-4 h-4 text-neutral-500 ml-2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 ml-2 pointer-events-none" />
           <input
             type="text"
             placeholder="Filter issues by title or key..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-xs text-white placeholder:text-neutral-500 focus:outline-none"
+            className="w-full bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-neutral-500" />
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="bg-[#14161C] border border-white/10 text-xs text-neutral-300 rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer"
+            className="bg-slate-50 border border-slate-200 text-xs text-slate-700 rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Priorities</option>
             <option value="URGENT">Urgent</option>
@@ -157,17 +157,17 @@ export function ProjectBoardClient({
           return (
             <div
               key={col.status}
-              className="rounded-xl border border-white/5 bg-[#0C0E12]/80 p-3 flex flex-col flex-shrink-0 min-w-[220px]"
+              className="rounded-xl border border-slate-200 bg-slate-100/70 p-3 flex flex-col flex-shrink-0 min-w-[220px]"
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/5">
+              <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <StatusIcon status={col.status} className="w-3.5 h-3.5" />
-                  <span className="text-xs font-semibold text-neutral-300">
+                  <span className="text-xs font-semibold text-slate-800">
                     {col.title}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-neutral-400">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600 shadow-2xs font-semibold">
                   {colTasks.length}
                 </span>
               </div>
@@ -184,32 +184,32 @@ export function ProjectBoardClient({
                     <div
                       key={task.id}
                       onClick={() => handleTaskClick(task)}
-                      className="p-3 rounded-lg border border-white/5 bg-[#121418] hover:border-white/20 hover:bg-[#16181F] transition group cursor-pointer shadow-sm space-y-2 active:scale-[0.99]"
+                      className="p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:shadow-md transition group cursor-pointer shadow-2xs space-y-2 active:scale-[0.99]"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-semibold text-neutral-400 group-hover:text-indigo-300 transition-colors">
+                        <span className="text-[10px] font-mono font-bold text-blue-600 group-hover:text-blue-700 transition-colors">
                           {task.key}
                         </span>
                         <PriorityIcon priority={task.priority} className="w-3.5 h-3.5" />
                       </div>
 
-                      <h3 className="text-xs font-semibold text-white leading-snug group-hover:text-indigo-200 transition line-clamp-2">
+                      <h3 className="text-xs font-semibold text-slate-900 leading-snug group-hover:text-blue-600 transition line-clamp-2">
                         {task.title}
                       </h3>
 
-                      <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-neutral-400">
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px] text-slate-500">
                         {totalCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-neutral-400">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-600">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             <span>
                               {completedCount}/{totalCount}
                             </span>
                           </span>
                         ) : (
-                          <span className="text-neutral-600">—</span>
+                          <span className="text-slate-400">—</span>
                         )}
 
-                        <span className="truncate max-w-[90px] font-mono">
+                        <span className="truncate max-w-[90px] font-mono text-slate-600">
                           {task.assignee?.name
                             ? task.assignee.name.split(" ")[0]
                             : "Unassigned"}
@@ -220,7 +220,7 @@ export function ProjectBoardClient({
                 })}
 
                 {colTasks.length === 0 && (
-                  <div className="h-28 border border-dashed border-white/5 rounded-lg flex items-center justify-center text-[11px] text-neutral-600">
+                  <div className="h-28 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-[11px] text-slate-400">
                     No issues
                   </div>
                 )}

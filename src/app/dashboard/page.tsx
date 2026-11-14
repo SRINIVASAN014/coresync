@@ -85,18 +85,18 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* 1. Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-            <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
+            <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
               Live Cloud Database • {orgName}
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Welcome back, {userName} 👋
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Viewing real-time project telemetry, workload velocity, and AI approvals.
           </p>
         </div>
@@ -119,68 +119,68 @@ export default async function DashboardPage() {
 
       {/* 2. Top Metric Cards (Calculated directly from live PostgreSQL) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:border-white/20 transition">
+        <Card className="hover:border-blue-300 hover:shadow-md transition">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
               Active Projects
             </span>
-            <FolderKanban className="w-4 h-4 text-indigo-400" />
+            <FolderKanban className="w-4 h-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-slate-900">
               {totalProjectsCount}
             </div>
-            <p className="text-[11px] text-neutral-500 mt-1 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span className="text-emerald-400 font-medium">100% live</span> PostgreSQL data
+            <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+              <TrendingUp className="w-3 h-3 text-emerald-600" />
+              <span className="text-emerald-600 font-medium">100% live</span> PostgreSQL data
             </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-white/20 transition">
+        <Card className="hover:border-blue-300 hover:shadow-md transition">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
               Sprint Tasks
             </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{totalTasksCount}</div>
-            <p className="text-[11px] text-neutral-500 mt-1">
+            <div className="text-2xl font-bold text-slate-900">{totalTasksCount}</div>
+            <p className="text-[11px] text-slate-500 mt-1">
               {completedTasksCount} completed ({velocity}% velocity)
             </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-white/20 transition">
+        <Card className="hover:border-blue-300 hover:shadow-md transition">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
               Pending AI Approvals
             </span>
-            <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <ShieldAlert className="w-4 h-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-300">
+            <div className="text-2xl font-bold text-amber-600">
               {pendingApprovals.length}
             </div>
-            <p className="text-[11px] text-amber-400/80 mt-1">
+            <p className="text-[11px] text-amber-700/80 mt-1">
               Requires manager sign-off
             </p>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-white/20 transition">
+        <Card className="hover:border-blue-300 hover:shadow-md transition">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
               Urgent Priority Tasks
             </span>
-            <AlertCircle className="w-4 h-4 text-rose-400" />
+            <AlertCircle className="w-4 h-4 text-rose-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-rose-400">
+            <div className="text-2xl font-bold text-rose-600">
               {urgentTasksCount}
             </div>
-            <p className="text-[11px] text-rose-400/80 mt-1">
+            <p className="text-[11px] text-rose-600/80 mt-1">
               Needs engineering focus
             </p>
           </CardContent>
@@ -188,22 +188,22 @@ export default async function DashboardPage() {
       </div>
 
       {/* 3. Live Projects Table (Loaded from PostgreSQL) */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <CardTitle>Active Enterprise Projects</CardTitle>
-            <p className="text-xs text-neutral-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Real-time synchronization across {orgName}
             </p>
           </div>
           <Link href="/dashboard/projects">
-            <Button variant="ghost" size="sm" className="text-xs text-indigo-400">
+            <Button variant="ghost" size="sm" className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
               View All Projects <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </Link>
         </CardHeader>
-        <CardContent>
-          <div className="divide-y divide-white/5">
+        <CardContent className="pt-4">
+          <div className="divide-y divide-slate-100">
             {projects.map((project) => {
               const taskCount = project.tasks.length;
               const completedCount = project.tasks.filter(
@@ -215,20 +215,20 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={project.id}
-                  className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] px-3 rounded-lg transition"
+                  className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 px-3 rounded-lg transition"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 rounded">
+                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded">
                       {project.key}
                     </span>
                     <div className="min-w-0">
                       <Link
                         href={`/dashboard/project/${project.id}`}
-                        className="text-sm font-semibold text-white hover:text-indigo-300 transition truncate block"
+                        className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition truncate block"
                       >
                         {project.name}
                       </Link>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-slate-500">
                         Lead: {project.owner.name} • {completedCount} of {taskCount} tasks done
                       </p>
                     </div>
@@ -237,13 +237,13 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-6">
                     {/* Progress Bar */}
                     <div className="w-32 hidden sm:block">
-                      <div className="flex justify-between text-[11px] text-neutral-400 mb-1">
+                      <div className="flex justify-between text-[11px] text-slate-500 mb-1">
                         <span>Progress</span>
-                        <span className="font-mono">{progress}%</span>
+                        <span className="font-mono text-slate-700 font-semibold">{progress}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -262,7 +262,7 @@ export default async function DashboardPage() {
                     </Badge>
 
                     <Link href={`/dashboard/project/${project.id}`}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="text-xs">
                         Open Board
                       </Button>
                     </Link>
@@ -276,15 +276,15 @@ export default async function DashboardPage() {
 
       {/* 4. Real Pending AI Approvals Queue */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-amber-500/20 bg-amber-950/10">
+        <Card className="border-amber-200 bg-amber-50/40">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-amber-400" />
-              <CardTitle className="text-amber-200">
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <CardTitle className="text-amber-900">
                 AI Action Approval Center ({pendingApprovals.length})
               </CardTitle>
             </div>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-amber-700/80">
               Live database proposals generated by autonomous agents awaiting manager review
             </p>
           </CardHeader>
@@ -292,17 +292,17 @@ export default async function DashboardPage() {
             {pendingApprovals.map((req) => (
               <div
                 key={req.id}
-                className="p-3 rounded-lg bg-black/40 border border-white/5 flex items-center justify-between"
+                className="p-3 rounded-lg bg-white border border-amber-200/80 flex items-center justify-between shadow-2xs"
               >
                 <div className="min-w-0 pr-3">
-                  <p className="text-xs font-medium text-white truncate">
+                  <p className="text-xs font-semibold text-slate-900 truncate">
                     {req.actionType.replace(/_/g, " ")}
                   </p>
-                  <p className="text-[10px] text-neutral-400">
+                  <p className="text-[10px] text-slate-500">
                     Requested by {req.requestedBy}
                   </p>
                 </div>
-                <Button variant="secondary" size="sm" className="h-7 text-xs flex-shrink-0">
+                <Button variant="secondary" size="sm" className="h-7 text-xs flex-shrink-0 bg-amber-100/70 hover:bg-amber-100 border-amber-200 text-amber-900">
                   Review Action
                 </Button>
               </div>
@@ -311,32 +311,32 @@ export default async function DashboardPage() {
         </Card>
 
         {/* AI Health & Governance Insights */}
-        <Card className="border-indigo-500/20 bg-indigo-950/10">
+        <Card className="border-blue-200 bg-blue-50/40">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-400" />
-              <CardTitle className="text-indigo-200">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <CardTitle className="text-blue-900">
                 Autonomous Project Telemetry
               </CardTitle>
             </div>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-blue-700/80">
               Real-time policy monitoring on Neon PostgreSQL
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
-              <p className="text-xs font-semibold text-white">
+            <div className="p-3 rounded-lg bg-white border border-blue-200/80 space-y-1 shadow-2xs">
+              <p className="text-xs font-semibold text-slate-900">
                 Multi-Tenant Isolation Verified
               </p>
-              <p className="text-[11px] text-neutral-400 leading-relaxed">
-                All projects, tasks, and audit logs are partitioned under Organization ID: <span className="font-mono text-indigo-300">{orgId || "org_root"}</span>.
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                All projects, tasks, and audit logs are partitioned under Organization ID: <span className="font-mono text-blue-600 font-bold">{orgId || "org_root"}</span>.
               </p>
             </div>
-            <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
-              <p className="text-xs font-semibold text-white">
+            <div className="p-3 rounded-lg bg-white border border-blue-200/80 space-y-1 shadow-2xs">
+              <p className="text-xs font-semibold text-slate-900">
                 AI Agent Boundary Active
               </p>
-              <p className="text-[11px] text-neutral-400 leading-relaxed">
+              <p className="text-[11px] text-slate-600 leading-relaxed">
                 Zero autonomous write permissions granted without manager cryptographic signature.
               </p>
             </div>

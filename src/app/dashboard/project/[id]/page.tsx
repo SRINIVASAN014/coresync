@@ -37,8 +37,8 @@ export default async function ProjectDetails({
   if (!project) {
     return (
       <div className="p-12 text-center space-y-4 max-w-md mx-auto select-none">
-        <h2 className="text-xl font-bold text-white">Project Not Found</h2>
-        <p className="text-xs text-neutral-400">
+        <h2 className="text-xl font-bold text-slate-900">Project Not Found</h2>
+        <p className="text-xs text-slate-500">
           This project may have been archived or your account does not have authorization to view it.
         </p>
         <Link href="/dashboard">

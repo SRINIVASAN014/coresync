@@ -169,23 +169,23 @@ export function IssueDetailDrawer({
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Slide-out Drawer Panel */}
-      <div className="relative z-50 w-full max-w-2xl bg-[#0D0F12] border-l border-white/10 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-250 select-none">
+      <div className="relative z-50 w-full max-w-2xl bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-250 select-none text-slate-900">
         
         {/* 1. Header Toolbar */}
-        <div className="h-14 px-6 border-b border-white/5 flex items-center justify-between flex-shrink-0 bg-[#0B0C0E]">
+        <div className="h-14 px-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0 bg-slate-50/80">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded">
+            <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded">
               {currentTask.key}
             </span>
 
             {currentTask.aiGenerated && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-full">
-                <Sparkles className="w-3 h-3 text-indigo-400" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                <Sparkles className="w-3 h-3 text-blue-600" />
                 AI Assisted
               </span>
             )}
@@ -198,18 +198,18 @@ export function IssueDetailDrawer({
                 setIsCopied(true);
                 setTimeout(() => setIsCopied(false), 2000);
               }}
-              className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-white/5 transition flex items-center gap-1 text-xs"
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition flex items-center gap-1 text-xs"
               title="Copy issue link"
             >
               {isCopied ? (
-                <Check className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-emerald-600" />
               ) : (
                 <Copy className="w-4 h-4" />
               )}
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-white/5 transition"
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -221,26 +221,26 @@ export function IssueDetailDrawer({
           
           {/* Issue Title & Description */}
           <div className="space-y-3">
-            <h2 className="text-xl font-bold text-white leading-snug">
+            <h2 className="text-xl font-bold text-slate-900 leading-snug">
               {currentTask.title}
             </h2>
-            <p className="text-xs text-neutral-300 leading-relaxed bg-[#121418] p-4 rounded-xl border border-white/5 whitespace-pre-wrap">
+            <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 whitespace-pre-wrap">
               {currentTask.description || "No description provided."}
             </p>
           </div>
 
           {/* Linear-Style Property Pickers */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl border border-white/5 bg-[#121418]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
             {/* Status Picker */}
             <div className="space-y-1">
-              <label className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider block">
+              <label className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">
                 Status
               </label>
               <div className="relative">
                 <select
                   value={currentTask.status}
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
-                  className="w-full bg-[#181A20] text-xs text-white border border-white/10 rounded-lg px-2.5 py-1.5 appearance-none focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  className="w-full bg-white text-xs text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
                 >
                   <option value="BACKLOG">Backlog</option>
                   <option value="TODO">To Do</option>
@@ -256,14 +256,14 @@ export function IssueDetailDrawer({
 
             {/* Priority Picker */}
             <div className="space-y-1">
-              <label className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider block">
+              <label className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">
                 Priority
               </label>
               <div className="relative">
                 <select
                   value={currentTask.priority}
                   onChange={(e) => handlePriorityChange(e.target.value as Priority)}
-                  className="w-full bg-[#181A20] text-xs text-white border border-white/10 rounded-lg px-2.5 py-1.5 appearance-none focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  className="w-full bg-white text-xs text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -278,13 +278,13 @@ export function IssueDetailDrawer({
 
             {/* Assignee Picker */}
             <div className="space-y-1 col-span-2 sm:col-span-1">
-              <label className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider block">
+              <label className="text-[10px] font-medium text-slate-500 uppercase tracking-wider block">
                 Assignee
               </label>
               <select
                 value={currentTask.assigneeId || ""}
                 onChange={(e) => handleAssigneeChange(e.target.value)}
-                className="w-full bg-[#181A20] text-xs text-white border border-white/10 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                className="w-full bg-white text-xs text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
               >
                 <option value="">Unassigned</option>
                 {teamMembers.map((member) => (
@@ -300,11 +300,11 @@ export function IssueDetailDrawer({
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                   Subtasks
                 </h3>
                 {totalSubtasks > 0 && (
-                  <span className="text-xs font-mono text-neutral-400">
+                  <span className="text-xs font-mono text-slate-500 font-semibold">
                     ({completedSubtasks}/{totalSubtasks})
                   </span>
                 )}
@@ -314,16 +314,16 @@ export function IssueDetailDrawer({
               <button
                 onClick={handleAiDecompose}
                 disabled={isAiLoading}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 px-3 py-1 rounded-lg transition active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 px-3 py-1.5 rounded-lg transition active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {isAiLoading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                     <span>Deconstructing...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
                     <span>Deconstruct with AI</span>
                   </>
                 )}
@@ -332,9 +332,9 @@ export function IssueDetailDrawer({
 
             {/* Progress Bar */}
             {totalSubtasks > 0 && (
-              <div className="w-full h-1 bg-neutral-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-300 rounded-full"
                   style={{ width: `${subtaskProgress}%` }}
                 />
               </div>
@@ -346,19 +346,19 @@ export function IssueDetailDrawer({
                 <div
                   key={sub.id}
                   onClick={() => handleToggleSubtask(sub.id, sub.completed)}
-                  className="flex items-center gap-3 p-2.5 rounded-lg bg-[#121418] border border-white/5 hover:border-white/10 cursor-pointer transition group"
+                  className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100/70 cursor-pointer transition group shadow-2xs"
                 >
                   <input
                     type="checkbox"
                     checked={sub.completed}
                     onChange={() => {}}
-                    className="w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-indigo-600 focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                   <span
                     className={`text-xs transition-colors ${
                       sub.completed
-                        ? "line-through text-neutral-500"
-                        : "text-neutral-200 group-hover:text-white"
+                        ? "line-through text-slate-400"
+                        : "text-slate-800 group-hover:text-blue-600"
                     }`}
                   >
                     {sub.title}
@@ -373,12 +373,12 @@ export function IssueDetailDrawer({
                   placeholder="+ Add new subtask..."
                   value={newSubtaskTitle}
                   onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  className="flex-1 bg-[#121418] border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
                 <button
                   type="submit"
                   disabled={!newSubtaskTitle.trim()}
-                  className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-xs text-white font-medium rounded-lg disabled:opacity-40 transition"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-xs text-slate-700 font-medium rounded-lg border border-slate-200 disabled:opacity-40 transition cursor-pointer"
                 >
                   Add
                 </button>
@@ -387,8 +387,8 @@ export function IssueDetailDrawer({
           </div>
 
           {/* Activity & Comments Stream */}
-          <div className="space-y-3 pt-4 border-t border-white/5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-300">
+          <div className="space-y-3 pt-4 border-t border-slate-100">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
               Activity & Comments
             </h3>
 
@@ -397,10 +397,10 @@ export function IssueDetailDrawer({
               {(currentTask.comments || []).map((c: any) => (
                 <div
                   key={c.id}
-                  className="p-3 rounded-lg bg-[#121418] border border-white/5 space-y-1.5"
+                  className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5"
                 >
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                    <span className="font-semibold text-white">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span className="font-semibold text-slate-900">
                       {c.user?.name || "Team Member"}
                     </span>
                     <span className="font-mono text-[10px]">
@@ -410,14 +410,14 @@ export function IssueDetailDrawer({
                       })}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-300 leading-relaxed">
+                  <p className="text-xs text-slate-700 leading-relaxed">
                     {c.content}
                   </p>
                 </div>
               ))}
 
               {(currentTask.comments || []).length === 0 && (
-                <p className="text-xs text-neutral-500 italic py-2">
+                <p className="text-xs text-slate-400 italic py-2">
                   No comments yet. Start the conversation below.
                 </p>
               )}
@@ -430,12 +430,12 @@ export function IssueDetailDrawer({
                 placeholder="Leave an engineering update or mention a teammate..."
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
-                className="flex-1 bg-[#121418] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
               <button
                 type="submit"
                 disabled={!newCommentText.trim()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer shadow-sm shadow-blue-500/20"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Post</span>
