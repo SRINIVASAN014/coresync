@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization } from "@/app/actions/work";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 interface OrgItem {
   id: string;
@@ -277,13 +278,7 @@ export function Sidebar({
               <p className="text-[10px] text-slate-500 truncate">{userEmail}</p>
             </div>
           </div>
-          <Link
-            href="/api/auth/signout"
-            title="Sign out"
-            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100 transition flex-shrink-0"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </Link>
+          <SignOutButton variant="sidebar" />
         </div>
       </aside>
 

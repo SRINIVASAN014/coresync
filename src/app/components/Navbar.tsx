@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export default async function Navbar() {
   // Fetch active user session securely from the server
@@ -82,12 +83,7 @@ export default async function Navbar() {
               >
                 Go to Workspace <ArrowRight className="w-3 h-3" />
               </Link>
-              <a
-                href="/api/auth/signout"
-                className="text-xs font-medium text-neutral-400 hover:text-rose-400 px-3 py-1.5 rounded-full border border-white/5 hover:border-rose-500/20 hover:bg-rose-500/5 transition ml-1"
-              >
-                Sign Out
-              </a>
+              <SignOutButton />
             </div>
           ) : (
             <div className="flex items-center gap-3">

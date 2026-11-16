@@ -4,12 +4,9 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
 import { TaskStatus, Priority, ProjectStatus, Role } from "@prisma/client";
-import { decomposeTaskSubtasksWithCoreSyncAI } from "@/lib/ai/coresync-engine";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
+import { decomposeTaskSubtasksWithCoreSyncAI } from "@/lib/ai/coresync-ai";
 
 /**
  * Update the status of a task (Backlog -> Todo -> In Progress -> In Review -> Done)
@@ -122,7 +119,7 @@ export async function createSubtask(taskId: string, title: string) {
 }
 
 /**
- * Deconstruct an issue into technical subtasks using Gemini AI
+ * Deconstruct an issue into technical subtasks using CoreSync Independent AI
  */
 export async function decomposeTaskWithAI(taskId: string) {
   try {
@@ -133,56 +130,11 @@ export async function decomposeTaskWithAI(taskId: string) {
 
     if (!task) throw new Error("Task not found");
 
-    let subtaskTitles: string[] = [];
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    const isConfigured = Boolean(
-      apiKey &&
-      apiKey.trim() !== "" &&
-      apiKey !== "your-gemini-api-key" &&
-      apiKey !== "dummy_key"
+    // Execute CoreSync Independent AI subtask generator (< 5ms)
+    const subtaskTitles = decomposeTaskSubtasksWithCoreSyncAI(
+      task.title,
+      task.description || undefined
     );
-
-    if (isConfigured) {
-      try {
-        const liveGenAI = new GoogleGenerativeAI(apiKey!);
-        const prompt = `
-          You are a Principal Software Engineer.
-          Break down the following issue into 3 to 4 concrete, actionable, technical engineering subtasks.
-          Issue Title: ${task.title}
-          Description: ${task.description || "No description provided."}
-          Project: ${task.project.name}
-
-          Return ONLY a raw JSON array of strings:
-          ["Subtask 1 title", "Subtask 2 title", "Subtask 3 title"]
-        `;
-        let result;
-        try {
-          const model = liveGenAI.getGenerativeModel({ model: "gemini-3.8-flash" });
-          result = await model.generateContent(prompt);
-        } catch {
-          const fallbackModel = liveGenAI.getGenerativeModel({ model: "gemini-flash-latest" });
-          result = await fallbackModel.generateContent(prompt);
-        }
-        let responseText = result.response.text().trim();
-        if (responseText.startsWith("```json")) {
-          responseText = responseText.replace(/^```json\s*/, "").replace(/```$/, "").trim();
-        } else if (responseText.startsWith("```")) {
-          responseText = responseText.replace(/^```\s*/, "").replace(/```$/, "").trim();
-        }
-        subtaskTitles = JSON.parse(responseText);
-      } catch (geminiErr) {
-        console.warn("Gemini subtask decomposition fallback:", geminiErr);
-      }
-    }
-
-    if (!Array.isArray(subtaskTitles) || subtaskTitles.length === 0) {
-      // Use CoreSync AI built-in subtask decomposition engine (< 5ms)
-      subtaskTitles = decomposeTaskSubtasksWithCoreSyncAI(
-        task.title,
-        task.description || undefined
-      );
-    }
 
     const createdSubtasks = [];
     for (const title of subtaskTitles) {
