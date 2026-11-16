@@ -284,9 +284,11 @@ export function Sidebar({
             {/* CoreSync Brand Wordmark */}
             {!isCollapsed && (
               <Link href="/dashboard" className="flex items-center gap-2 min-w-0 group ml-0.5">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#3B82F6] via-[#6366F1] to-[#8B5CF6] flex items-center justify-center font-bold text-white shadow-xs flex-shrink-0">
-                  <Sparkles className="w-3.5 h-3.5" />
-                </div>
+                <img
+                  src="/coresync-mark.png"
+                  alt="CoreSync Logo"
+                  className="w-7 h-7 rounded-lg object-contain shadow-xs flex-shrink-0"
+                />
                 <span className="text-base font-bold text-slate-900 tracking-tight truncate">
                   Core<span className="text-[#0C66E4]">Sync</span>
                 </span>

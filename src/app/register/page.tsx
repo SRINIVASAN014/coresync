@@ -106,7 +106,12 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-md bg-[#0F1015]/90 border border-white/10 rounded-2xl p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
         {/* Brand Logo Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block group mb-3">
+          <Link href="/" className="inline-flex items-center gap-2.5 group mb-3">
+            <img
+              src="/coresync-mark.png"
+              alt="CoreSync Logo"
+              className="w-9 h-9 rounded-xl object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+            />
             <span className="text-3xl font-extrabold tracking-tight">
               <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">Core</span>
               <span className="text-[#3B82F6] drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] group-hover:text-blue-400 transition-colors">Sync</span>

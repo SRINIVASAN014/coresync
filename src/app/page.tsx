@@ -563,7 +563,12 @@ export default async function LandingPage() {
       {/* 8. Footer */}
       <footer className="border-t border-white/[0.06] py-12 text-xs text-slate-500 max-w-6xl mx-auto px-6 w-full">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/coresync-mark.png"
+              alt="CoreSync Logo"
+              className="w-5 h-5 rounded-md object-contain"
+            />
             <span className="text-base font-bold text-white">Core<span className="text-[#3B82F6]">Sync</span></span>
             <span className="text-slate-700">•</span>
             <span>Enterprise Work & AI Governance Platform</span>

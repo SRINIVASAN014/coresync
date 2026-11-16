@@ -32,18 +32,14 @@ export default function LoginPage() {
   );
 }
 
-// Iconic Brand Circle Icon from user's Linear screenshot
-function LinearStyleBrandIcon({ className = "w-10 h-10" }: { className?: string }) {
+// Official CoreSync Geometric Interlocking Logo Mark
+function CoreSyncBrandLogo({ className = "w-11 h-11" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <circle cx="50" cy="50" r="48" fill="#18181B" />
-      <path
-        d="M26 68L68 26M33 77L77 33M42 84L84 42"
-        stroke="white"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src="/coresync-mark.png"
+      alt="CoreSync Logo"
+      className={`${className} rounded-2xl object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.35)]`}
+    />
   );
 }
 
@@ -197,7 +193,7 @@ function LoginContainer() {
             {/* Left Column: Brand & Heading */}
             <div>
               <div className="mb-4">
-                <LinearStyleBrandIcon className="w-12 h-12" />
+                <CoreSyncBrandLogo className="w-12 h-12" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-normal text-slate-900 tracking-tight">
                 Choose an account
@@ -325,9 +321,9 @@ function LoginContainer() {
       {/* Main Centered Login Container matching Image 2 */}
       <div className="w-full max-w-[340px] sm:max-w-[360px] flex flex-col items-center my-auto">
         
-        {/* Brand Logo: Clean Black Circle with Diagonal Lines */}
+        {/* Official Brand Logo */}
         <div className="mb-5">
-          <LinearStyleBrandIcon className="w-11 h-11" />
+          <CoreSyncBrandLogo className="w-12 h-12" />
         </div>
 
         {/* Title */}

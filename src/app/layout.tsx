@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: "CoreSync — AI-Native Multi-Company Work Management",
   description:
     "Next-generation Jira alternative with autonomous AI agents and strict multi-tenant governance.",
+  icons: {
+    icon: "/coresync-mark.png",
+    shortcut: "/coresync-mark.png",
+    apple: "/coresync-mark.png",
+  },
 };
 
 export default function RootLayout({

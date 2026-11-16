@@ -14,10 +14,12 @@ export default async function Navbar() {
         {/* Left: Official Brand Logo matching the uploaded screenshot */}
         <div className="flex items-center gap-6 lg:gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
-            {/* Blue to Purple Gradient Badge with Sparkle */}
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3B82F6] via-[#6366F1] to-[#A855F7] flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(59,130,246,0.35)] group-hover:scale-105 transition-transform">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
+            {/* Official Geometric Interlocking Emblem */}
+            <img
+              src="/coresync-mark.png"
+              alt="CoreSync Logo"
+              className="w-8 h-8 rounded-lg object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:scale-105 transition-transform"
+            />
             {/* Crisp Pure White 'Core' + Electric Blue 'Sync' */}
             <span className="text-xl font-bold tracking-tight text-white flex items-center">
               Core<span className="text-[#3B82F6]">Sync</span>
