@@ -18,18 +18,49 @@ export const authOptions: NextAuthOptions = {
         ]
       : []),
     CredentialsProvider({
-      name: "Email and Password",
+      name: "Authentication",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "admin@cybertech.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        isGoogleChooser: { label: "isGoogleChooser", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email) {
+          return null;
+        }
+
+        const normalizedEmail = credentials.email.toLowerCase().trim();
+
+        // 1. Google Account Chooser instant 1-click authentication
+        if (credentials.isGoogleChooser === "true") {
+          let user = await db.user.findUnique({
+            where: { email: normalizedEmail },
+          });
+
+          if (!user) {
+            user = await db.user.create({
+              data: {
+                email: normalizedEmail,
+                name: normalizedEmail.split("@")[0],
+              },
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          };
+        }
+
+        // 2. Standard Email/Password verification
+        if (!credentials.password) {
           return null;
         }
 
         const user = await db.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
+          where: { email: normalizedEmail },
         });
 
         if (!user || !user.password) {

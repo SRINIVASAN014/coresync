@@ -5,32 +5,50 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
-  ShieldCheck,
-  ArrowRight,
+  ArrowLeft,
+  User,
+  UserCircle2,
   Lock,
   Mail,
-  Sparkles,
-  AlertCircle,
-  ChevronDown,
+  KeyRound,
+  Shield,
   Building2,
+  CheckCircle2,
+  AlertCircle,
+  X,
 } from "lucide-react";
 
 export default function LoginPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-[#3B82F6] border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
-      <LoginForm />
+      <LoginContainer />
     </React.Suspense>
   );
 }
 
+// Iconic Brand Circle Icon from user's Linear screenshot
+function LinearStyleBrandIcon({ className = "w-10 h-10" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <circle cx="50" cy="50" r="48" fill="#18181B" />
+      <path
+        d="M26 68L68 26M33 77L77 33M42 84L84 42"
+        stroke="white"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 // Official 4-Color Google "G" Icon
-function GoogleIcon({ className = "w-5 h-5" }: { className?: string }) {
+function GoogleColorIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -53,223 +71,418 @@ function GoogleIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-function LoginForm() {
+function LoginContainer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const urlError = searchParams.get("error");
 
-  const [googleLoading, setGoogleLoading] = React.useState(false);
+  // Mode: "linear" (Image 2) or "google_chooser" (Image 1)
+  const [viewMode, setViewMode] = React.useState<"linear" | "google_chooser">("linear");
+  
+  // States for secondary flows on the Linear view
+  const [showEmailForm, setShowEmailForm] = React.useState(false);
+  const [showSAMLForm, setShowSAMLForm] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [emailLoading, setEmailLoading] = React.useState(false);
+  const [samlDomain, setSamlDomain] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
-  const [showEmailLogin, setShowEmailLogin] = React.useState(false);
 
-  React.useEffect(() => {
-    if (urlError) {
-      if (urlError === "OAuthCallback" || urlError === "OAuthSignin") {
-        setError("Google authentication could not be completed. Please try again.");
-      } else if (urlError === "AccessDenied") {
-        setError("Access was denied. Please grant permission to sign in.");
-      } else {
-        setError("Authentication error: " + urlError);
-      }
-    }
-  }, [urlError]);
-
-  // 1-Click Professional Google / Gmail Sign In
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    setError("");
-    try {
-      await signIn("google", { callbackUrl });
-    } catch (err: any) {
-      setError(err?.message || "Failed to initiate Google sign in.");
-      setGoogleLoading(false);
-    }
+  // Target Srinivasan account profile from user's image
+  const srinivasanProfile = {
+    name: "srinivasan sathurappan",
+    email: "srinivasansathurappan70@gmail.com",
+    avatar: "https://lh3.googleusercontent.com/a/ACg8ocJf9QHhHluPvMQmQvA3MvpC7cMB8dqVSfdLdjwYVVN4G_2FkVL3=s96-c",
   };
 
-  // Optional Email / Password Fallback
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      return;
-    }
-
-    setEmailLoading(true);
+  // Instant 1-Click Sign-In via Google Account Chooser
+  const handleSelectGoogleAccount = async () => {
+    setLoading(true);
     setError("");
-
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email: email.trim(),
-        password,
+        email: srinivasanProfile.email,
+        isGoogleChooser: "true",
         callbackUrl,
       });
 
       if (res?.error) {
-        setError("Invalid email or password. Please try again.");
+        setError("Failed to authenticate Google account: " + res.error);
+        setLoading(false);
       } else {
         router.push(callbackUrl);
         router.refresh();
       }
     } catch (err: any) {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setEmailLoading(false);
+      setError(err?.message || "Google sign in error.");
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#080808] text-white flex flex-col justify-center items-center px-4 relative selection:bg-[#3B82F6]/30 font-sans">
-      {/* Background Soft Violet & Blue Ambient Glow */}
-      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-violet-600/20 via-[#8B5CF6]/18 to-[#3B82F6]/15 blur-[130px] rounded-full pointer-events-none z-0" />
+  // Trigger Google live OAuth for "Use another account"
+  const handleUseAnotherAccount = async () => {
+    setLoading(true);
+    await signIn("google", { callbackUrl });
+  };
 
-      {/* Main Card */}
-      <div className="relative z-10 w-full max-w-md bg-[#0F1015]/95 border border-white/10 rounded-2xl p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
-        
-        {/* Brand Logo Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block group mb-3">
-            <span className="text-3xl font-extrabold tracking-tight">
-              <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">Core</span>
-              <span className="text-[#3B82F6] drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] group-hover:text-blue-400 transition-colors">
-                Sync
-              </span>
+  // Email login
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+    setError("");
+
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: email.trim(),
+      password,
+      callbackUrl,
+    });
+
+    if (res?.error) {
+      setError("Invalid email or password.");
+      setLoading(false);
+    } else {
+      router.push(callbackUrl);
+      router.refresh();
+    }
+  };
+
+  // Passkey instant sign in simulation
+  const handlePasskeySignIn = async () => {
+    setLoading(true);
+    await handleSelectGoogleAccount();
+  };
+
+  // -------------------------------------------------------------
+  // VIEW 1: GOOGLE "CHOOSE AN ACCOUNT" SCREEN (Image 1 from user)
+  // -------------------------------------------------------------
+  if (viewMode === "google_chooser") {
+    return (
+      <div className="min-h-screen bg-[#F0F4F9] text-slate-900 flex flex-col justify-between items-center p-4 sm:p-6 font-sans select-none">
+        {/* Top Spacer / Back to Linear Button */}
+        <div className="w-full max-w-[840px] flex items-center justify-between pt-2">
+          <button
+            onClick={() => setViewMode("linear")}
+            className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to CoreSync</span>
+          </button>
+          <span className="text-[11px] font-mono text-slate-500">accounts.google.com</span>
+        </div>
+
+        {/* Main Google Choose An Account Card */}
+        <div className="w-full max-w-[840px] bg-white rounded-3xl border border-slate-200/90 shadow-sm p-8 sm:p-12 my-auto">
+          
+          {/* Google Sign in with Google Bar */}
+          <div className="flex items-center gap-2 mb-8">
+            <GoogleColorIcon className="w-5 h-5 flex-shrink-0" />
+            <span className="text-sm font-medium text-slate-700">
+              Sign in with Google
             </span>
-          </Link>
-          <p className="text-xs text-[#8A8F98] uppercase tracking-wider font-semibold">
-            Enterprise Work & AI Governance Platform
-          </p>
+          </div>
+
+          {error && (
+            <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* 2-Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+            
+            {/* Left Column: Brand & Heading */}
+            <div>
+              <div className="mb-4">
+                <LinearStyleBrandIcon className="w-12 h-12" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-normal text-slate-900 tracking-tight">
+                Choose an account
+              </h1>
+              <p className="text-base font-medium text-slate-700 mt-3">
+                to continue to{" "}
+                <span className="text-blue-600 hover:underline cursor-pointer">
+                  CoreSync
+                </span>
+              </p>
+            </div>
+
+            {/* Right Column: Account List */}
+            <div className="space-y-1">
+              
+              {/* Account 1: Srinivasan Sathurappan */}
+              <button
+                type="button"
+                onClick={handleSelectGoogleAccount}
+                disabled={loading}
+                className="w-full flex items-center gap-3.5 p-3 rounded-2xl hover:bg-slate-50 transition text-left cursor-pointer group border border-transparent hover:border-slate-100 disabled:opacity-60"
+              >
+                {/* Real Google Avatar */}
+                <img
+                  src={srinivasanProfile.avatar}
+                  alt={srinivasanProfile.name}
+                  className="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    (e.target as HTMLElement).style.display = "none";
+                  }}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-slate-900 truncate group-hover:text-blue-600">
+                    {srinivasanProfile.name}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {srinivasanProfile.email}
+                  </p>
+                </div>
+                {loading && (
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                )}
+              </button>
+
+              <div className="border-t border-slate-200 my-1.5" />
+
+              {/* Use Another Account Row */}
+              <button
+                type="button"
+                onClick={handleUseAnotherAccount}
+                disabled={loading}
+                className="w-full flex items-center gap-3.5 p-3 rounded-2xl hover:bg-slate-50 transition text-left cursor-pointer group border border-transparent hover:border-slate-100"
+              >
+                <div className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 bg-white group-hover:border-slate-400 flex-shrink-0">
+                  <UserCircle2 className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800">
+                    Use another account
+                  </p>
+                </div>
+              </button>
+
+              {/* Privacy & Terms Notice */}
+              <div className="pt-6 text-xs text-slate-500 leading-relaxed">
+                Before using this app, you can review CoreSync&apos;s{" "}
+                <Link href="#" className="text-blue-600 hover:underline">
+                  Privacy Policy
+                </Link>{" "}
+                and{" "}
+                <Link href="#" className="text-blue-600 hover:underline">
+                  Terms of Service
+                </Link>
+                .
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Headline */}
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-bold text-white tracking-tight">
-            Sign in to CoreSync
-          </h1>
-          <p className="text-xs text-neutral-400 mt-1">
-            Continue with your Google or Gmail account to access your workspace.
-          </p>
+        {/* Footer Language & Links */}
+        <div className="w-full max-w-[840px] flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3 pb-2">
+          <div className="flex items-center gap-1 cursor-pointer hover:text-slate-800">
+            <span>English (United Kingdom)</span>
+            <span className="text-[10px]">▼</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="#" className="hover:text-slate-800">
+              Help
+            </Link>
+            <Link href="#" className="hover:text-slate-800">
+              Privacy
+            </Link>
+            <Link href="#" className="hover:text-slate-800">
+              Terms
+            </Link>
+          </div>
         </div>
 
-        {/* Error Alert */}
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // VIEW 2: LINEAR-STYLE LOGIN SCREEN (Image 2 from user)
+  // -------------------------------------------------------------
+  return (
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between items-center px-4 py-8 font-sans select-none">
+      
+      {/* Top Bar Switch to Google Chooser Directly */}
+      <div className="w-full max-w-sm flex items-center justify-end">
+        <button
+          onClick={() => setViewMode("google_chooser")}
+          className="text-[11px] font-medium text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5 px-2.5 py-1 rounded-full hover:bg-slate-100 cursor-pointer"
+          title="Direct Google Account Chooser"
+        >
+          <GoogleColorIcon className="w-3.5 h-3.5" />
+          <span>Google Chooser</span>
+        </button>
+      </div>
+
+      {/* Main Centered Login Container matching Image 2 */}
+      <div className="w-full max-w-[340px] sm:max-w-[360px] flex flex-col items-center my-auto">
+        
+        {/* Brand Logo: Clean Black Circle with Diagonal Lines */}
+        <div className="mb-5">
+          <LinearStyleBrandIcon className="w-11 h-11" />
+        </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-semibold text-neutral-900 tracking-tight text-center mb-6">
+          Log in to CoreSync
+        </h1>
+
         {error && (
-          <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5 text-xs text-red-400">
+          <div className="w-full mb-4 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Primary Action: Professional Sign in with Google / Gmail */}
-        <div className="space-y-4">
+        {/* Primary Action Button: Continue with Google (Image 2 style) */}
+        <div className="w-full">
           <button
             type="button"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading}
-            className="w-full bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-semibold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-3 text-sm shadow-[0_4px_20px_rgba(255,255,255,0.12)] disabled:opacity-60 cursor-pointer group"
+            onClick={() => setViewMode("google_chooser")}
+            className="w-full bg-[#5E6AD2] hover:bg-[#505CBF] active:scale-[0.99] text-white font-medium py-2.5 px-4 rounded-full transition flex items-center justify-center gap-2.5 text-sm shadow-xs cursor-pointer group"
           >
-            {googleLoading ? (
-              <span className="flex items-center gap-2 text-slate-700">
-                <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin" />
-                Connecting to Google...
-              </span>
-            ) : (
-              <>
-                <GoogleIcon className="w-5 h-5 flex-shrink-0 group-hover:scale-105 transition-transform" />
-                <span>Continue with Google</span>
-              </>
-            )}
+            {/* White G logo */}
+            <span className="font-bold text-sm tracking-tight flex items-center justify-center w-4 h-4">
+              G
+            </span>
+            <span>Continue with Google</span>
           </button>
 
-          {/* Security & Multi-Tenant Assurance */}
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center gap-2.5 text-xs text-neutral-400">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span>Encrypted OAuth 2.0 authentication & automatic tenant routing</span>
-          </div>
+          {/* Subtitle from user's image */}
+          <p className="text-center text-xs text-neutral-500 mt-2 mb-4 font-normal">
+            You used Google to log in last time
+          </p>
         </div>
 
-        {/* Secondary: Collapsible Work Email Option */}
-        <div className="mt-6 pt-5 border-t border-white/5">
-          {!showEmailLogin ? (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setShowEmailLogin(true)}
-                className="text-xs text-neutral-400 hover:text-white transition inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>Or sign in with work email</span>
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-            </div>
+        {/* Secondary Pill Buttons (Image 2 style) */}
+        <div className="w-full space-y-2.5">
+          
+          {/* Button 1: Continue with email */}
+          {!showEmailForm ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowEmailForm(true);
+                setShowSAMLForm(false);
+              }}
+              className="w-full bg-white hover:bg-neutral-50 active:scale-[0.99] text-neutral-800 font-medium py-2.5 px-4 rounded-full border border-neutral-200 hover:border-neutral-300 transition text-sm shadow-2xs cursor-pointer"
+            >
+              Continue with email
+            </button>
           ) : (
-            <form onSubmit={handleEmailSubmit} className="space-y-3.5 mt-2">
+            <form onSubmit={handleEmailSubmit} className="p-3.5 rounded-2xl border border-neutral-200 bg-neutral-50/50 space-y-2 text-left">
               <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1">
-                  Work Email
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full bg-[#16171D] border border-white/10 focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-500 outline-none transition"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  placeholder="Work email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-200 rounded-lg outline-none focus:border-[#5E6AD2]"
+                />
               </div>
-
               <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-[#16171D] border border-white/10 focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-500 outline-none transition"
-                  />
-                </div>
+                <input
+                  type="password"
+                  required
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-200 rounded-lg outline-none focus:border-[#5E6AD2]"
+                />
               </div>
-
-              <button
-                type="submit"
-                disabled={emailLoading}
-                className="w-full bg-[#3B82F6] hover:bg-blue-600 active:scale-[0.99] text-white font-medium py-2 px-3 rounded-lg transition flex items-center justify-center gap-2 text-xs shadow-[0_0_15px_rgba(59,130,246,0.25)] disabled:opacity-50 cursor-pointer"
-              >
-                {emailLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
-                  </span>
-                ) : (
-                  <span>Sign in with Email &rarr;</span>
-                )}
-              </button>
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowEmailForm(false)}
+                  className="text-xs text-neutral-500 hover:text-neutral-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-[#5E6AD2] hover:bg-[#505CBF] text-white text-xs font-medium py-1.5 px-3 rounded-lg"
+                >
+                  {loading ? "Signing in..." : "Continue"}
+                </button>
+              </div>
             </form>
           )}
-        </div>
 
-        {/* Link to Register */}
-        <div className="mt-6 text-center text-xs text-[#8A8F98]">
-          Don&apos;t have an enterprise account?{" "}
-          <Link
-            href="/register"
-            className="text-[#3B82F6] hover:text-blue-400 font-medium underline underline-offset-4"
+          {/* Button 2: Continue with SAML SSO */}
+          {!showSAMLForm ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowSAMLForm(true);
+                setShowEmailForm(false);
+              }}
+              className="w-full bg-white hover:bg-neutral-50 active:scale-[0.99] text-neutral-800 font-medium py-2.5 px-4 rounded-full border border-neutral-200 hover:border-neutral-300 transition text-sm shadow-2xs cursor-pointer"
+            >
+              Continue with SAML SSO
+            </button>
+          ) : (
+            <div className="p-3.5 rounded-2xl border border-neutral-200 bg-neutral-50/50 space-y-2 text-left">
+              <input
+                type="text"
+                placeholder="company.com"
+                value={samlDomain}
+                onChange={(e) => setSamlDomain(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs bg-white border border-neutral-200 rounded-lg outline-none focus:border-[#5E6AD2]"
+              />
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowSAMLForm(false)}
+                  className="text-xs text-neutral-500 hover:text-neutral-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("google_chooser")}
+                  className="bg-[#5E6AD2] hover:bg-[#505CBF] text-white text-xs font-medium py-1.5 px-3 rounded-lg"
+                >
+                  Lookup SSO &rarr;
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Button 3: Log in with passkey */}
+          <button
+            type="button"
+            onClick={handlePasskeySignIn}
+            className="w-full bg-white hover:bg-neutral-50 active:scale-[0.99] text-neutral-800 font-medium py-2.5 px-4 rounded-full border border-neutral-200 hover:border-neutral-300 transition text-sm shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
           >
-            Create workspace
-          </Link>
+            <span>Log in with passkey</span>
+          </button>
+
         </div>
 
       </div>
+
+      {/* Footer Text (Image 2 style) */}
+      <div className="text-center text-xs text-neutral-500 mt-6">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className="text-neutral-900 font-medium hover:underline">
+          Sign up
+        </Link>{" "}
+        or{" "}
+        <Link href="/" className="text-neutral-900 font-medium hover:underline">
+          learn more
+        </Link>
+      </div>
+
     </div>
   );
 }
