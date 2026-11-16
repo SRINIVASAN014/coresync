@@ -144,11 +144,11 @@ function LoginContent() {
         
         {/* Official CoreSync Logo alone (no name) */}
         <Link href="/" className="mb-6 group transition transform hover:scale-105 inline-block" aria-label="CoreSync Home">
-          <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-[#090A0E] border border-slate-200/80 shadow-md flex items-center justify-center p-2.5">
+          <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-[#0B0C10] border border-slate-200/80 shadow-md flex items-center justify-center overflow-hidden">
             <img
               src="/coresync-mark.png"
               alt="CoreSync Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
           </div>
         </Link>

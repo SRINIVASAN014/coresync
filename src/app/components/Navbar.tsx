@@ -15,11 +15,13 @@ export default async function Navbar() {
         <div className="flex items-center gap-6 lg:gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             {/* Official Geometric Interlocking Emblem */}
-            <img
-              src="/coresync-mark.png"
-              alt="CoreSync Logo"
-              className="w-8 h-8 rounded-lg object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:scale-105 transition-transform"
-            />
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#0B0C10] border border-white/10 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+              <img
+                src="/coresync-mark.png"
+                alt="CoreSync Logo"
+                className="w-full h-full object-cover"
+              />
+            </div>
             {/* Crisp Pure White 'Core' + Electric Blue 'Sync' */}
             <span className="text-xl font-bold tracking-tight text-white flex items-center">
               Core<span className="text-[#3B82F6]">Sync</span>

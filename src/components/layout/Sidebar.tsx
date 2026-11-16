@@ -285,9 +285,9 @@ export function Sidebar({
             {/* CoreSync Brand Wordmark */}
             {!isCollapsed && (
               <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 group ml-0.5">
-                <CoreSyncLogo size={28} variant="tile" />
+                <CoreSyncLogo size={28} />
                 <span className="text-base font-bold text-slate-900 tracking-tight truncate">
-                  Core<span className="text-[#0C66E4]">Sync</span>
+                  Core<span className="text-[#3B82F6]">Sync</span>
                 </span>
               </Link>
             )}
