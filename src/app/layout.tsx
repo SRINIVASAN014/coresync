@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CoreSync — AI-Native Multi-Company Work Management",
+  title: "CoreSync — AI-Native Enterprise Work Management",
   description:
-    "Next-generation Jira alternative with autonomous AI agents and strict multi-tenant governance.",
+    "Enterprise work management, issue tracking, and autonomous AI governance for modern software teams.",
   icons: {
     icon: "/coresync-mark.png",
     shortcut: "/coresync-mark.png",

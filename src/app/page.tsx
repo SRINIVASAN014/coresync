@@ -48,7 +48,7 @@ export default async function LandingPage() {
             <span className="flex h-2 w-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
             <span className="font-semibold text-white">CoreSync 2.0</span>
             <span className="text-slate-600">·</span>
-            <span className="text-slate-400">Issue tracking built for speed</span>
+            <span className="text-slate-400">The work platform for product engineering</span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 transition-transform" />
           </Link>
 
@@ -57,7 +57,7 @@ export default async function LandingPage() {
 
           {/* Subtitle - Professional, Direct Engineering Copy */}
           <p className="max-w-2xl text-base sm:text-lg text-slate-400 mb-10 leading-relaxed font-normal">
-            Linear-speed issue tracking, sprint milestones, and deterministic multi-tenant governance. Engineered for high-velocity teams who value craft, keyboard navigation, and sub-50ms execution.
+            High-velocity issue tracking, sprint milestones, and autonomous AI governance. Purpose-built for engineering teams who demand speed, keyboard navigation, and precision.
           </p>
 
           {/* Action Buttons */}
@@ -78,18 +78,18 @@ export default async function LandingPage() {
           </div>
 
           {/* Trust Marks & Key Metrics */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-xs text-slate-500 font-mono">
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-xs text-slate-400 font-mono">
             <div className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span>
-              <span>Sub-50ms query response</span>
+              <span className="text-emerald-400 font-bold">✓</span>
+              <span>Sub-50ms query latency</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span>
-              <span>100% PostgreSQL tenant isolation</span>
+              <span className="text-emerald-400 font-bold">✓</span>
+              <span>Strict multi-tenant isolation</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span>
-              <span>Independent in-house AI engine</span>
+              <span className="text-emerald-400 font-bold">✓</span>
+              <span>Autonomous AI governance</span>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ export default async function LandingPage() {
             </div>
             <div>
               <h3 className="text-base font-semibold text-white mb-1.5">
-                Mathematical Tenant Isolation
+                Strict Multi-Tenant Isolation
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 PostgreSQL schema boundaries guarantee Company A can never access Company B&apos;s project data, issues, or audit logs. Built on Neon AWS with SSL enforcement.
@@ -139,7 +139,7 @@ export default async function LandingPage() {
             </div>
             <div>
               <h3 className="text-base font-semibold text-white mb-1.5">
-                Independent CoreSync AI Engine
+                Autonomous Planning Engine
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Native in-house roadmap planner that decomposes high-level technical objectives into milestones and issues in under 25ms. Zero external third-party API dependencies.
@@ -179,7 +179,7 @@ export default async function LandingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Template 1: Linear Sprints */}
+          {/* Template 1: Sprint Cycles */}
           <div className="p-6 rounded-2xl border border-white/[0.08] bg-[#0A0C10] hover:border-[#3B82F6]/40 transition group">
             <div className="flex items-start justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[#3B82F6]">
@@ -190,7 +190,7 @@ export default async function LandingPage() {
               </span>
             </div>
             <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
-              High-Velocity Linear Delivery
+              High-Velocity Sprint Cycles
             </h3>
             <p className="text-xs text-slate-400 mb-4 leading-relaxed">
               Optimized for fast 2-week iterations. Features automated issue keys, signal-bar priority scoring, rapid-keyboard drawer editing, and zero-clutter Kanban flows.
@@ -198,7 +198,7 @@ export default async function LandingPage() {
             <div className="space-y-2 text-xs text-slate-300 mb-6">
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#3B82F6]" />
-                <span>Linear-style status cycle (Backlog → Done)</span>
+                <span>Structured status workflow (Backlog → Done)</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-3.5 h-3.5 text-[#3B82F6]" />
@@ -360,7 +360,7 @@ export default async function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
-                  <span>Linear 5-column Kanban board</span>
+                  <span>High-velocity 5-column Kanban board</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
@@ -454,7 +454,7 @@ export default async function LandingPage() {
               <div className="space-y-3 text-xs text-slate-300 border-t border-white/[0.06] pt-6 mb-8">
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                  <span className="font-semibold text-white">Unbreakable logical tenant isolation</span>
+                  <span className="font-semibold text-white">Dedicated multi-tenant database isolation</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
@@ -497,7 +497,7 @@ export default async function LandingPage() {
               Connect Directly with our Systems Architecture Team
             </h2>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Have questions about multi-tenant database partitioning, integrating autonomous agent workers, or migrating legacy Jira instances into CoreSync? Let&apos;s build together.
+              Have questions about multi-tenant database partitioning, integrating autonomous agent workers, or migrating legacy workspaces into CoreSync? Let&apos;s build together.
             </p>
 
             <div className="space-y-4 pt-4 border-t border-white/[0.06] text-xs text-slate-300">
