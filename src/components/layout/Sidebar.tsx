@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   PanelLeftClose,
   PanelLeft,
@@ -32,10 +32,45 @@ import {
   KanbanSquare,
   Wrench,
   Compass,
+  Rocket,
+  Plane,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+
+// Custom Jira Product Discovery Icons matching user screenshot
+function IdeaListIcon({ className = "w-3.5 h-3.5 text-slate-500" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="5" cy="7" r="1.5" fill="currentColor" />
+      <circle cx="5" cy="17" r="1.5" fill="currentColor" />
+      <line x1="10" y1="7" x2="20" y2="7" />
+      <line x1="10" y1="17" x2="20" y2="17" />
+    </svg>
+  );
+}
+
+function MatrixIcon({ className = "w-3.5 h-3.5 text-slate-500" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4v16h16" />
+      <circle cx="9" cy="9" r="1.8" fill="currentColor" />
+      <circle cx="16" cy="7" r="1.8" fill="currentColor" />
+      <circle cx="13" cy="14" r="1.8" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TimelineBarsIcon({ className = "w-3.5 h-3.5 text-slate-500" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+      <line x1="4" y1="17" x2="14" y2="17" />
+    </svg>
+  );
+}
 
 export interface ProjectItem {
   id: string;
@@ -73,11 +108,14 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentView = searchParams.get("view") || "roadmap";
 
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = React.useState(false);
   const [isCreateOrgModalOpen, setIsCreateOrgModalOpen] = React.useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = React.useState(false);
+  const [isDiscoveryMenuOpen, setIsDiscoveryMenuOpen] = React.useState(false);
 
   // New Project Form State
   const [newProjectName, setNewProjectName] = React.useState("");
@@ -508,6 +546,182 @@ export function Sidebar({
                     </span>
                   </Link>
                 </div>
+
+                {/* 4. Subcategory: Product Discovery Project Tree (From User's Screenshot) */}
+                <div className="pt-2 border-t border-slate-100">
+                  {/* Discovery Project Header with Badge & '...' */}
+                  <div className="flex items-center justify-between px-1.5 py-1 rounded-lg hover:bg-slate-50 transition group relative">
+                    <Link
+                      href="/dashboard/discovery"
+                      className="flex items-center gap-2 min-w-0 flex-1"
+                      title="My discovery project"
+                    >
+                      {/* Jira Discovery 3-Color Badge */}
+                      <div className="w-5 h-5 rounded-md bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-500 flex items-center justify-center shadow-xs flex-shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-xs bg-slate-900/40 flex items-center justify-center text-white text-[8px] font-bold">
+                          ✦
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-800 truncate group-hover:text-[#0C66E4]">
+                        My discovery project
+                      </span>
+                    </Link>
+
+                    <button
+                      onClick={() => setIsDiscoveryMenuOpen(!isDiscoveryMenuOpen)}
+                      className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
+                      title="Project options"
+                    >
+                      <MoreHorizontal className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Discovery Project Options Dropdown Popover */}
+                    {isDiscoveryMenuOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-50">
+                        <Link
+                          href="/dashboard/discovery?view=all-ideas"
+                          onClick={() => setIsDiscoveryMenuOpen(false)}
+                          className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg"
+                        >
+                          <IdeaListIcon />
+                          <span>View All Ideas</span>
+                        </Link>
+                        <Link
+                          href="/dashboard/discovery?view=roadmap"
+                          onClick={() => setIsDiscoveryMenuOpen(false)}
+                          className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg"
+                        >
+                          <span className="text-xs">🚀</span>
+                          <span>Open Roadmap</span>
+                        </Link>
+                        <div className="my-1 border-t border-slate-100" />
+                        <Link
+                          href="/dashboard/discovery"
+                          onClick={() => setIsDiscoveryMenuOpen(false)}
+                          className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[#0C66E4] hover:bg-blue-50 font-medium rounded-lg"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Discovery Overview</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Discovery Views Sub-Tree matching Jira screenshot */}
+                  <div className="space-y-0.5 mt-1 pl-2.5 ml-2 border-l border-slate-200/60">
+                    {/* View 1: All ideas */}
+                    <Link
+                      href="/dashboard/discovery?view=all-ideas"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && currentView === "all-ideas"
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="All ideas"
+                    >
+                      <IdeaListIcon />
+                      <span className="truncate">All ideas</span>
+                    </Link>
+
+                    {/* View 2: Impact assessment */}
+                    <Link
+                      href="/dashboard/discovery?view=impact-assessment"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && currentView === "impact-assessment"
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="Impact assessment"
+                    >
+                      <IdeaListIcon />
+                      <span className="truncate">Impact assessment</span>
+                    </Link>
+
+                    {/* View 3: Impact vs effort */}
+                    <Link
+                      href="/dashboard/discovery?view=impact-vs-effort"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && currentView === "impact-vs-effort"
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="Impact vs effort"
+                    >
+                      <MatrixIcon />
+                      <span className="truncate">Impact vs effort</span>
+                    </Link>
+
+                    {/* View 4: Roadmap (🚀 Active State in User's Screenshot) */}
+                    <Link
+                      href="/dashboard/discovery?view=roadmap"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && (currentView === "roadmap" || !currentView)
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="Roadmap"
+                    >
+                      <span className="text-sm leading-none flex items-center justify-center flex-shrink-0">
+                        🚀
+                      </span>
+                      <span className="truncate font-medium">Roadmap</span>
+                    </Link>
+
+                    {/* View 5: Timeline */}
+                    <Link
+                      href="/dashboard/discovery?view=timeline"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && currentView === "timeline"
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="Timeline"
+                    >
+                      <TimelineBarsIcon />
+                      <span className="truncate">Timeline</span>
+                    </Link>
+
+                    {/* View 6: In flight */}
+                    <Link
+                      href="/dashboard/discovery?view=in-flight"
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
+                        pathname === "/dashboard/discovery" && currentView === "in-flight"
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                      title="In flight"
+                    >
+                      <span className="text-sm leading-none flex items-center justify-center flex-shrink-0">
+                        ✈️
+                      </span>
+                      <span className="truncate">In flight</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Collapsed State Icon for Product Discovery */}
+            {isCollapsed && (
+              <div className="space-y-1 mt-2 flex flex-col items-center">
+                <Link
+                  href="/dashboard/discovery?view=roadmap"
+                  className={cn(
+                    "w-9 h-9 flex items-center justify-center rounded-lg text-xs transition",
+                    pathname === "/dashboard/discovery"
+                      ? "bg-[#EBF3FF] text-[#0C66E4]"
+                      : "text-slate-600 hover:bg-slate-100"
+                  )}
+                  title="My discovery project (Roadmap)"
+                >
+                  <span className="text-sm">🚀</span>
+                </Link>
               </div>
             )}
           </div>

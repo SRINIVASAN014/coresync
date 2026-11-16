@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -110,15 +111,21 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-white text-slate-900">
       {/* 1. Left Sidebar Navigation with Live Multi-Tenant Workspace Switcher */}
-      <Sidebar
-        currentOrgName={orgName}
-        currentOrgSlug={orgSlug}
-        userEmail={userEmail}
-        userName={userName}
-        userRole={userRole}
-        organizations={allOrganizations}
-        projects={projects}
-      />
+      <Suspense
+        fallback={
+          <aside className="w-64 border-r border-slate-200 bg-white h-screen flex-shrink-0" />
+        }
+      >
+        <Sidebar
+          currentOrgName={orgName}
+          currentOrgSlug={orgSlug}
+          userEmail={userEmail}
+          userName={userName}
+          userRole={userRole}
+          organizations={allOrganizations}
+          projects={projects}
+        />
+      </Suspense>
 
       {/* 2. Main Content Viewport */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8FAFC]">
