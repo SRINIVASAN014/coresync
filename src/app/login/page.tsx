@@ -57,7 +57,6 @@ function LoginContent() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const urlError = searchParams.get("error");
 
-  const [mounted, setMounted] = React.useState(false);
   const [googleLoading, setGoogleLoading] = React.useState(false);
   const [showEmailForm, setShowEmailForm] = React.useState(false);
   const [showSAMLForm, setShowSAMLForm] = React.useState(false);
@@ -66,10 +65,6 @@ function LoginContent() {
   const [samlDomain, setSamlDomain] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   React.useEffect(() => {
     if (urlError) {
@@ -137,14 +132,6 @@ function LoginContent() {
       router.refresh();
     }
   };
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-[#FBFBFC] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#5E6AD2] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div suppressHydrationWarning className="min-h-screen bg-[#FBFBFC] text-slate-900 flex flex-col justify-between items-center px-4 py-12 font-sans select-none">
