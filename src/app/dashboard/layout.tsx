@@ -93,6 +93,20 @@ export default async function DashboardLayout({
 
   const allOrganizations = Array.from(uniqueOrgsMap.values());
 
+  // 6. Fetch Active Projects for the Sidebar Navigation Hierarchy
+  const projects = await db.project.findMany({
+    where: activeMembership?.organizationId
+      ? { organizationId: activeMembership.organizationId }
+      : undefined,
+    select: {
+      id: true,
+      name: true,
+      key: true,
+    },
+    take: 6,
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div className="flex h-screen overflow-hidden bg-white text-slate-900">
       {/* 1. Left Sidebar Navigation with Live Multi-Tenant Workspace Switcher */}
@@ -103,6 +117,7 @@ export default async function DashboardLayout({
         userName={userName}
         userRole={userRole}
         organizations={allOrganizations}
+        projects={projects}
       />
 
       {/* 2. Main Content Viewport */}

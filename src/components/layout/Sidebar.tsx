@@ -4,26 +4,47 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
+  PanelLeftClose,
+  PanelLeft,
+  LayoutGrid,
+  User,
+  Clock,
+  Star,
+  Layers,
   FolderKanban,
-  KanbanSquare,
+  Plus,
+  MoreHorizontal,
+  ChevronRight,
+  ChevronDown,
+  Zap,
   Sparkles,
+  Filter,
+  LayoutDashboard,
   ShieldCheck,
+  Shield,
   Users,
   Settings,
+  ExternalLink,
   Building2,
-  ChevronDown,
-  Bot,
-  Plus,
   Check,
-  LogOut,
   X,
+  RefreshCw,
+  KanbanSquare,
+  Wrench,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { switchActiveOrganization, createOrganization } from "@/app/actions/work";
+import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
-interface OrgItem {
+export interface ProjectItem {
+  id: string;
+  name: string;
+  key: string;
+  status?: string;
+}
+
+export interface OrgItem {
   id: string;
   name: string;
   slug: string;
@@ -38,6 +59,7 @@ interface SidebarProps {
   userName?: string;
   userRole?: string;
   organizations?: OrgItem[];
+  projects?: ProjectItem[];
 }
 
 export function Sidebar({
@@ -47,12 +69,24 @@ export function Sidebar({
   userName = "Enterprise User",
   userRole = "OWNER",
   organizations = [],
+  projects = [],
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = React.useState(false);
   const [isCreateOrgModalOpen, setIsCreateOrgModalOpen] = React.useState(false);
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = React.useState(false);
+
+  // New Project Form State
+  const [newProjectName, setNewProjectName] = React.useState("");
+  const [newProjectKey, setNewProjectKey] = React.useState("");
+  const [newProjectDesc, setNewProjectDesc] = React.useState("");
+  const [isSubmittingProject, setIsSubmittingProject] = React.useState(false);
+  const [projectError, setProjectError] = React.useState("");
+
+  // New Org Form State
   const [newOrgName, setNewOrgName] = React.useState("");
   const [newOrgIndustry, setNewOrgIndustry] = React.useState("Technology & Software");
   const [isSubmittingOrg, setIsSubmittingOrg] = React.useState(false);
@@ -60,17 +94,31 @@ export function Sidebar({
 
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Deduplicate organizations defensively so React keys are always unique
+  // Deduplicate organizations defensively
   const uniqueOrganizations = React.useMemo(() => {
     const map = new Map<string, OrgItem>();
     organizations.forEach((org, idx) => {
       const key = org.id || `org-${idx}`;
-      if (!map.has(key)) {
-        map.set(key, org);
-      }
+      if (!map.has(key)) map.set(key, org);
     });
     return Array.from(map.values());
   }, [organizations]);
+
+  // Fallback demo projects if database has none
+  const displayProjects = React.useMemo(() => {
+    if (projects && projects.length > 0) return projects;
+    return [
+      { id: "example-billing", name: "(Example) Billing System Dev", key: "BILL" },
+      { id: "example-software", name: "My Software Team", key: "DEV" },
+    ];
+  }, [projects]);
+
+  const starredProject = displayProjects[0] || {
+    id: "example-billing",
+    name: "(Example) Billing System Dev",
+    key: "BILL",
+  };
+  const recentProjects = displayProjects.slice(1);
 
   // Close dropdown on click outside
   React.useEffect(() => {
@@ -112,241 +160,602 @@ export function Sidebar({
     setIsSubmittingOrg(false);
   };
 
-  const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-    { name: "Kanban Board", href: "/dashboard/kanban", icon: KanbanSquare },
-    { name: "AI Project Planner", href: "/dashboard/ai-planner", icon: Sparkles, badge: "AI" },
-    { name: "Approval Center", href: "/dashboard/approvals", icon: ShieldCheck, badge: "3" },
-    { name: "Teams & Members", href: "/dashboard/teams", icon: Users },
-    { name: "Workspace Settings", href: "/dashboard/settings", icon: Settings },
-  ];
+  const handleCreateProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjectName.trim() || !newProjectKey.trim()) return;
+
+    setIsSubmittingProject(true);
+    setProjectError("");
+
+    const res = await createProject({
+      name: newProjectName.trim(),
+      key: newProjectKey.trim().toUpperCase(),
+      description: newProjectDesc.trim() || undefined,
+    });
+
+    if (res.success && res.project) {
+      setIsCreateProjectModalOpen(false);
+      setNewProjectName("");
+      setNewProjectKey("");
+      setNewProjectDesc("");
+      router.push(`/dashboard/project/${res.project.id}`);
+      router.refresh();
+    } else {
+      setProjectError(res.error || "Failed to create project");
+    }
+    setIsSubmittingProject(false);
+  };
+
+  // Generate suggested key as project name is typed
+  const handleProjectNameChange = (name: string) => {
+    setNewProjectName(name);
+    if (!newProjectKey || newProjectKey === name.slice(0, 3).toUpperCase()) {
+      const generated = name
+        .trim()
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 4)
+        .toUpperCase();
+      setNewProjectKey(generated);
+    }
+  };
 
   return (
     <>
-      <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col h-screen select-none relative z-30">
-        {/* 1. Organization & Multi-Company Workspace Switcher */}
-        <div className="p-3 border-b border-slate-200 relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
-            className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition text-left cursor-pointer group"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-blue-500/25 flex-shrink-0 group-hover:scale-105 transition-transform">
-                <Building2 className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-900 truncate leading-tight group-hover:text-blue-600 transition-colors">
-                  {currentOrgName}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-mono uppercase tracking-wider font-semibold">
+      <aside
+        className={cn(
+          "flex-shrink-0 border-r border-slate-200 bg-white flex flex-col h-screen select-none relative z-30 transition-all duration-200 ease-in-out",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        {/* 1. Jira-Inspired Top Header Row */}
+        <div className="h-14 border-b border-slate-200 flex items-center justify-between px-3 gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Collapse / Expand Toggle Button */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer flex-shrink-0"
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? (
+                <PanelLeft className="w-4 h-4" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* App Launcher 9-Dots Icon */}
+            {!isCollapsed && (
+              <button
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer flex-shrink-0"
+                title="Apps & Integrations"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* CoreSync Brand Wordmark */}
+            {!isCollapsed && (
+              <Link href="/dashboard" className="flex items-center gap-2 min-w-0 group ml-0.5">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#3B82F6] via-[#6366F1] to-[#8B5CF6] flex items-center justify-center font-bold text-white shadow-xs flex-shrink-0">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-base font-bold text-slate-900 tracking-tight truncate">
+                  Core<span className="text-[#0C66E4]">Sync</span>
+                </span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Workspace Selector Button */}
+        {!isCollapsed && (
+          <div className="p-2 border-b border-slate-100 relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
+              className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition text-left cursor-pointer group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-6 h-6 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 text-xs font-bold flex-shrink-0">
+                  {currentOrgName.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-slate-800 truncate leading-tight group-hover:text-[#0C66E4]">
+                    {currentOrgName}
+                  </p>
+                  <span className="text-[10px] text-slate-500 font-mono">
                     {userRole}
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    Enterprise
-                  </span>
                 </div>
               </div>
-            </div>
-            <ChevronDown
-              className={cn(
-                "w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200",
-                isOrgDropdownOpen && "rotate-180 text-slate-700"
-              )}
-            />
-          </button>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+            </button>
 
-          {/* Switcher Dropdown Popover */}
-          {isOrgDropdownOpen && (
-            <div className="absolute top-full left-3 right-3 mt-1.5 bg-white border border-slate-200 rounded-xl p-2 shadow-xl backdrop-blur-xl z-50">
-              <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Workspaces ({uniqueOrganizations.length || 1})
-              </div>
-
-              <div className="max-h-48 overflow-y-auto space-y-1 my-1">
-                {uniqueOrganizations.map((org, index) => {
-                  const isActive = org.name === currentOrgName;
-                  return (
-                    <button
-                      key={org.id ? `${org.id}-${index}` : `workspace-${index}`}
-                      onClick={() => handleSwitchOrg(org.id)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-xs transition cursor-pointer",
-                        isActive
-                          ? "bg-blue-50 text-blue-700 font-semibold border border-blue-200"
-                          : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
-                      )}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 flex-shrink-0">
-                          {org.name.charAt(0)}
-                        </div>
+            {/* Workspace Dropdown Popover */}
+            {isOrgDropdownOpen && (
+              <div className="absolute top-full left-2 right-2 mt-1 bg-white border border-slate-200 rounded-xl p-2 shadow-xl z-50">
+                <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Workspaces ({uniqueOrganizations.length})
+                </div>
+                <div className="max-h-48 overflow-y-auto space-y-1 my-1">
+                  {uniqueOrganizations.map((org, idx) => {
+                    const isActive = org.name === currentOrgName;
+                    return (
+                      <button
+                        key={org.id || `org-${idx}`}
+                        onClick={() => handleSwitchOrg(org.id)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition cursor-pointer",
+                          isActive
+                            ? "bg-blue-50 text-[#0C66E4] font-semibold"
+                            : "text-slate-700 hover:bg-slate-50"
+                        )}
+                      >
                         <span className="truncate">{org.name}</span>
-                      </div>
-                      {isActive && <Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />}
-                    </button>
-                  );
-                })}
+                        {isActive && <Check className="w-3.5 h-3.5 text-[#0C66E4]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="pt-1 border-t border-slate-100 mt-1">
+                  <button
+                    onClick={() => {
+                      setIsOrgDropdownOpen(false);
+                      setIsCreateOrgModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium text-[#0C66E4] hover:bg-blue-50 transition cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create New Workspace</span>
+                  </button>
+                </div>
               </div>
+            )}
+          </div>
+        )}
 
-              <div className="pt-1.5 border-t border-slate-100 mt-1">
-                <button
-                  onClick={() => {
-                    setIsOrgDropdownOpen(false);
-                    setIsCreateOrgModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create New Workspace</span>
-                </button>
+        {/* 3. Scrollable Sidebar Navigation Tree */}
+        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+          
+          {/* Section A: Personal Overview (For You, Recent, Starred, Plans) */}
+          <div className="space-y-0.5">
+            {/* For You */}
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-xs transition",
+                pathname === "/dashboard"
+                  ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+              )}
+              title="For you"
+            >
+              <User className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              {!isCollapsed && <span>For you</span>}
+            </Link>
+
+            {/* Recent */}
+            <Link
+              href="/dashboard"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition group"
+              title="Recent"
+            >
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                {!isCollapsed && <span>Recent</span>}
               </div>
-            </div>
-          )}
-        </div>
+              {!isCollapsed && (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+              )}
+            </Link>
 
-        {/* 2. Navigation Links */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Workspace
+            {/* Starred */}
+            <Link
+              href="/dashboard"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition group"
+              title="Starred"
+            >
+              <div className="flex items-center gap-3">
+                <Star className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                {!isCollapsed && <span>Starred</span>}
+              </div>
+              {!isCollapsed && (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+              )}
+            </Link>
+
+            {/* Apps & Workspaces */}
+            <Link
+              href="/dashboard/projects"
+              className="flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition"
+              title="Apps"
+            >
+              <LayoutGrid className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              {!isCollapsed && <span>Apps</span>}
+            </Link>
+
+            {/* Plans / Kanban Roadmap */}
+            <Link
+              href="/dashboard/kanban"
+              className={cn(
+                "flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-xs transition",
+                pathname === "/dashboard/kanban"
+                  ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+              )}
+              title="Plans"
+            >
+              <Layers className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              {!isCollapsed && <span>Plans</span>}
+            </Link>
           </div>
 
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all group",
-                  isActive
-                    ? "bg-blue-50 text-blue-600 border border-blue-200 font-semibold shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+          {/* Section B: Spaces / Projects Section (From User's Photo) */}
+          <div className="pt-2 border-t border-slate-100">
+            {/* Header: Spaces / Projects with '+' and '...' */}
+            <div className="flex items-center justify-between px-2 py-1 mb-1">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                {!isCollapsed && (
+                  <span className="text-xs font-semibold text-slate-800">Projects</span>
                 )}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className={cn(
-                      "w-4 h-4 transition-colors",
-                      isActive
-                        ? "text-blue-600"
-                        : "text-slate-400 group-hover:text-slate-600"
-                    )}
-                  />
-                  <span>{item.name}</span>
+              </div>
+              {!isCollapsed && (
+                <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => setIsCreateProjectModalOpen(true)}
+                    className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition cursor-pointer"
+                    title="Create new project"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                  <Link
+                    href="/dashboard/projects"
+                    className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition"
+                    title="View all projects"
+                  >
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
+              )}
+            </div>
 
-                {item.badge && (
-                  <span
+            {!isCollapsed && (
+              <div className="space-y-2 mt-1">
+                {/* 1. Subcategory: Starred */}
+                <div>
+                  <div className="px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                    Starred
+                  </div>
+                  {/* Starred Active Project Card */}
+                  <Link
+                    href={starredProject.id === "example-billing" ? "/dashboard/kanban" : `/dashboard/project/${starredProject.id}`}
                     className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase",
-                      item.badge === "AI"
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-amber-50 text-amber-700 border border-amber-200"
+                      "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition mt-0.5 group",
+                      pathname.includes(starredProject.id) || (starredProject.id === "example-billing" && pathname === "/dashboard/kanban")
+                        ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                        : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+                    {/* Jira-Style Sync / Blue-Purple Project Badge */}
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white flex-shrink-0 shadow-2xs">
+                      <RefreshCw className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="truncate">{starredProject.name}</span>
+                  </Link>
+                </div>
 
-        {/* 3. AI Agent Status & Governance Widget */}
-        <div className="p-3 mx-3 mb-3 rounded-xl border border-blue-100 bg-blue-50/70 text-xs">
-          <div className="flex items-center gap-2 mb-1.5 text-blue-700 font-semibold">
-            <Bot className="w-3.5 h-3.5 text-blue-600" />
-            <span>AI Governance Guard</span>
+                {/* 2. Subcategory: Recent */}
+                <div>
+                  <div className="px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                    Recent
+                  </div>
+                  {recentProjects.map((p, idx) => (
+                    <Link
+                      key={p.id || idx}
+                      href={`/dashboard/project/${p.id}`}
+                      className={cn(
+                        "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition mt-0.5",
+                        pathname.includes(p.id)
+                          ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      {/* Jira-Style Tool Project Badge */}
+                      <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-amber-500 to-purple-600 flex items-center justify-center text-white flex-shrink-0 shadow-2xs">
+                        <Wrench className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="truncate">{p.name}</span>
+                    </Link>
+                  ))}
+
+                  {/* More Projects Button with Chevron */}
+                  <Link
+                    href="/dashboard/projects"
+                    className="flex items-center justify-between px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition mt-0.5 group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FolderKanban className="w-3.5 h-3.5 text-slate-400" />
+                      <span>More projects</span>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+                  </Link>
+                </div>
+
+                {/* 3. Subcategory: Recommended (AI Sprint Roadmap with 'Try' badge) */}
+                <div>
+                  <div className="px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                    Recommended
+                  </div>
+                  <Link
+                    href="/dashboard/ai-planner"
+                    className={cn(
+                      "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition mt-0.5",
+                      pathname === "/dashboard/ai-planner"
+                        ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                        : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white flex-shrink-0 shadow-2xs">
+                        <Zap className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="truncate font-medium">Create a roadmap</span>
+                    </div>
+                    {/* Jira-Style 'Try' Badge */}
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                      Try
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
-          <p className="text-[11px] text-slate-600 leading-snug">
-            Multi-tenant boundary active. Autonomous AI actions require authorized approval.
-          </p>
+
+          {/* Section C: Views & Approvals */}
+          <div className="pt-2 border-t border-slate-100 space-y-0.5">
+            {/* Filters */}
+            <Link
+              href="/dashboard/kanban"
+              className="flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition"
+              title="Filters"
+            >
+              <Filter className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              {!isCollapsed && <span>Filters</span>}
+            </Link>
+
+            {/* Dashboards */}
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition"
+              title="Dashboards"
+            >
+              <LayoutDashboard className="w-4 h-4 text-slate-500 flex-shrink-0" />
+              {!isCollapsed && <span>Dashboards</span>}
+            </Link>
+
+            {/* Governance & Approval Center */}
+            <Link
+              href="/dashboard/approvals"
+              className={cn(
+                "flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition",
+                pathname === "/dashboard/approvals"
+                  ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+              )}
+              title="Approval Center"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                {!isCollapsed && <span>Approvals</span>}
+              </div>
+              {!isCollapsed && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                  3
+                </span>
+              )}
+            </Link>
+          </div>
+
+          {/* Section D: External Assets & Teams */}
+          <div className="pt-2 border-t border-slate-100 space-y-0.5">
+            {/* Assets & Security Policies */}
+            <Link
+              href="/dashboard/settings"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition group"
+              title="Assets & Security"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                {!isCollapsed && <span>Assets</span>}
+              </div>
+              {!isCollapsed && (
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+              )}
+            </Link>
+
+            {/* Teams */}
+            <Link
+              href="/dashboard/teams"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition group"
+              title="Teams"
+            >
+              <div className="flex items-center gap-3">
+                <Users className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                {!isCollapsed && <span>Teams</span>}
+              </div>
+              {!isCollapsed && (
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+              )}
+            </Link>
+          </div>
+
         </div>
 
-        {/* 4. User Footer Profile */}
-        <div className="p-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/60">
+        {/* 4. User Footer Profile with Instant Direct Sign Out */}
+        <div className="p-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/70 flex-shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-xs flex-shrink-0">
               {userName.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-900 truncate">{userName}</p>
-              <p className="text-[10px] text-slate-500 truncate">{userEmail}</p>
-            </div>
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-900 truncate leading-tight">
+                  {userName}
+                </p>
+                <p className="text-[10px] text-slate-500 truncate">
+                  {userEmail}
+                </p>
+              </div>
+            )}
           </div>
+
           <SignOutButton variant="sidebar" />
         </div>
       </aside>
 
-      {/* 5. Create Organization Modal */}
-      {isCreateOrgModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* 5. Create Project Modal (Triggered by '+' next to Projects) */}
+      {isCreateProjectModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl relative text-slate-900">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-bold text-slate-900">Create New Workspace</h3>
+                <FolderKanban className="w-5 h-5 text-[#0C66E4]" />
+                <h3 className="text-base font-bold text-slate-900">Create New Project</h3>
               </div>
               <button
-                onClick={() => setIsCreateOrgModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition"
+                onClick={() => setIsCreateProjectModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {orgError && (
-              <div className="mb-4 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-600">
-                {orgError}
-              </div>
-            )}
-
-            <form onSubmit={handleCreateOrg} className="space-y-4">
+            <form onSubmit={handleCreateProjectSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Workspace / Company Name
-                </label>
+                <label className="font-semibold text-slate-700 block mb-1">Project Name</label>
                 <input
                   type="text"
                   required
-                  value={newOrgName}
-                  onChange={(e) => setNewOrgName(e.target.value)}
-                  placeholder="e.g. NextGen Aerospace"
-                  className="w-full bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition"
+                  placeholder="e.g. Billing System Development"
+                  value={newProjectName}
+                  onChange={(e) => handleProjectNameChange(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Industry / Domain
-                </label>
+                <label className="font-semibold text-slate-700 block mb-1">Project Key (Prefix)</label>
                 <input
                   type="text"
-                  value={newOrgIndustry}
-                  onChange={(e) => setNewOrgIndustry(e.target.value)}
-                  placeholder="e.g. Autonomous Defense & AI"
-                  className="w-full bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition"
+                  required
+                  maxLength={6}
+                  placeholder="e.g. BILL"
+                  value={newProjectKey}
+                  onChange={(e) => setNewProjectKey(e.target.value.toUpperCase())}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold text-blue-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Description (Optional)</label>
+                <textarea
+                  rows={2}
+                  placeholder="Brief summary of the project scope..."
+                  value={newProjectDesc}
+                  onChange={(e) => setNewProjectDesc(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                />
+              </div>
+
+              {projectError && (
+                <p className="text-rose-600 text-[11px] font-medium">{projectError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateProjectModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingProject || !newProjectName.trim() || !newProjectKey.trim()}
+                  className="px-4 py-2 rounded-xl bg-[#0C66E4] hover:bg-blue-700 text-white font-semibold transition disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {isSubmittingProject ? "Creating..." : "Create Project"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Create Workspace Modal */}
+      {isCreateOrgModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl relative text-slate-900">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#0C66E4]" />
+                <h3 className="text-base font-bold text-slate-900">Create New Workspace</h3>
+              </div>
+              <button
+                onClick={() => setIsCreateOrgModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateOrg} className="space-y-4 text-xs">
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Company / Team Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Apex Security Systems"
+                  value={newOrgName}
+                  onChange={(e) => setNewOrgName(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Industry Domain</label>
+                <select
+                  value={newOrgIndustry}
+                  onChange={(e) => setNewOrgIndustry(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                >
+                  <option>Technology & Software</option>
+                  <option>Fintech & Banking</option>
+                  <option>Healthcare & Life Sciences</option>
+                  <option>Cybersecurity & Defense</option>
+                  <option>E-Commerce & Retail</option>
+                </select>
+              </div>
+
+              {orgError && (
+                <p className="text-rose-600 text-[11px] font-medium">{orgError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsCreateOrgModalOpen(false)}
-                  className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition"
+                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 transition font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingOrg || !newOrgName.trim()}
-                  className="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#0C66E4] hover:bg-blue-700 text-white font-semibold transition disabled:opacity-50 cursor-pointer shadow-xs"
                 >
-                  {isSubmittingOrg ? "Provisioning..." : "Create Workspace"}
+                  {isSubmittingOrg ? "Creating..." : "Create Workspace"}
                 </button>
               </div>
             </form>
