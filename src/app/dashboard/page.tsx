@@ -103,8 +103,8 @@ export default async function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <Link href="/dashboard/ai-planner">
-            <Button variant="ai" size="sm">
-              <Sparkles className="w-3.5 h-3.5" />
+            <Button variant="ai" size="sm" className="font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-[#6554C0]" />
               <span>AI Sprint Planner</span>
             </Button>
           </Link>

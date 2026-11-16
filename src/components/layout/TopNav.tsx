@@ -41,8 +41,8 @@ export function TopNav({
       <div className="flex items-center gap-2.5">
         {/* Run AI Planner Button */}
         <Link href="/dashboard/ai-planner">
-          <Button variant="ai" size="sm" className="shadow-sm h-8 text-xs">
-            <Sparkles className="w-3.5 h-3.5 mr-1" />
+          <Button variant="ai" size="sm" className="h-8 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5 mr-1 text-[#6554C0]" />
             <span>AI Planner</span>
           </Button>
         </Link>

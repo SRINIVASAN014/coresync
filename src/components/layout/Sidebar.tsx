@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { CoreSyncLogo } from "@/components/ui/CoreSyncLogo";
 
 // Custom Jira Product Discovery Icons matching user screenshot
 function IdeaListIcon({ className = "w-3.5 h-3.5 text-slate-500" }: { className?: string }) {
@@ -283,12 +284,8 @@ export function Sidebar({
 
             {/* CoreSync Brand Wordmark */}
             {!isCollapsed && (
-              <Link href="/dashboard" className="flex items-center gap-2 min-w-0 group ml-0.5">
-                <img
-                  src="/coresync-mark.png"
-                  alt="CoreSync Logo"
-                  className="w-7 h-7 rounded-lg object-contain shadow-xs flex-shrink-0"
-                />
+              <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 group ml-0.5">
+                <CoreSyncLogo size={28} variant="tile" />
                 <span className="text-base font-bold text-slate-900 tracking-tight truncate">
                   Core<span className="text-[#0C66E4]">Sync</span>
                 </span>
