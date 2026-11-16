@@ -60,11 +60,17 @@ function TimelineBarsIcon({ className = "w-4 h-4 text-slate-500" }: { className?
 }
 
 export type DiscoveryViewType =
+  | "initiatives"
   | "all-ideas"
+  | "priority-scoring"
   | "impact-assessment"
+  | "strategic-matrix"
   | "impact-vs-effort"
+  | "horizon-roadmap"
   | "roadmap"
+  | "milestone-schedule"
   | "timeline"
+  | "active-delivery"
   | "in-flight";
 
 interface DiscoveryIdea {
@@ -187,7 +193,14 @@ export function DiscoveryClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const activeView = (searchParams.get("view") as DiscoveryViewType) || "roadmap";
+  const rawView = (searchParams.get("view") as DiscoveryViewType) || "horizon-roadmap";
+  const activeView: "initiatives" | "priority-scoring" | "strategic-matrix" | "horizon-roadmap" | "milestone-schedule" | "active-delivery" =
+    rawView === "all-ideas" || rawView === "initiatives" ? "initiatives" :
+    rawView === "impact-assessment" || rawView === "priority-scoring" ? "priority-scoring" :
+    rawView === "impact-vs-effort" || rawView === "strategic-matrix" ? "strategic-matrix" :
+    rawView === "timeline" || rawView === "milestone-schedule" ? "milestone-schedule" :
+    rawView === "in-flight" || rawView === "active-delivery" ? "active-delivery" :
+    "horizon-roadmap";
 
   const [ideas, setIdeas] = React.useState<DiscoveryIdea[]>(INITIAL_IDEAS);
   const [searchFilter, setSearchFilter] = React.useState("");
@@ -200,7 +213,7 @@ export function DiscoveryClient() {
   const [newEffort, setNewEffort] = React.useState<1 | 2 | 3 | 4 | 5>(2);
   const [newStage, setNewStage] = React.useState<"NOW" | "NEXT" | "LATER">("NEXT");
 
-  const handleSelectView = (view: DiscoveryViewType) => {
+  const handleSelectView = (view: "initiatives" | "priority-scoring" | "strategic-matrix" | "horizon-roadmap" | "milestone-schedule" | "active-delivery") => {
     router.push(`/dashboard/discovery?view=${view}`);
   };
 
@@ -251,17 +264,17 @@ export function DiscoveryClient() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto select-none">
       
-      {/* 1. Project Breadcrumb & Discovery Header */}
+      {/* 1. Project Breadcrumb & Strategy Header */}
       <div className="pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
           <span>Projects</span>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-semibold text-slate-700">My discovery project</span>
+          <span className="font-semibold text-slate-700">Product Strategy Hub</span>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {/* Jira-Style 3-Color Discovery Badge */}
+            {/* CoreSync Strategy 3-Color Badge */}
             <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-500 flex items-center justify-center shadow-sm flex-shrink-0">
               <div className="w-4 h-4 rounded-xs bg-slate-900/30 flex items-center justify-center text-white text-xs font-bold">
                 ✦
@@ -270,14 +283,14 @@ export function DiscoveryClient() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                  My discovery project
+                  Product Strategy Hub
                 </h1>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-[#0C66E4] border border-blue-200">
-                  DISCOVERY
+                  STRATEGY
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Capture ideas, quantify customer impact vs. engineering effort, and drive quarterly roadmaps.
+                Capture feature opportunities, score value vs. engineering effort, and drive delivery roadmaps.
               </p>
             </div>
           </div>
@@ -288,105 +301,105 @@ export function DiscoveryClient() {
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0C66E4] hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Create idea</span>
+              <span>New Initiative</span>
             </button>
           </div>
         </div>
 
-        {/* 2. Jira-Style Tabbed View Navigation matching the screenshot */}
+        {/* 2. Strategy Tabbed View Navigation */}
         <div className="flex items-center gap-1 overflow-x-auto mt-6 border-b border-slate-200 pb-0">
           
-          {/* View 1: All Ideas */}
+          {/* View 1: Initiative Catalog */}
           <button
-            onClick={() => handleSelectView("all-ideas")}
+            onClick={() => handleSelectView("initiatives")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "all-ideas"
+              activeView === "initiatives"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <IdeaListIcon />
-            <span>All ideas</span>
+            <span>Initiative Catalog</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">
               {ideas.length}
             </span>
           </button>
 
-          {/* View 2: Impact Assessment */}
+          {/* View 2: Priority Scoring */}
           <button
-            onClick={() => handleSelectView("impact-assessment")}
+            onClick={() => handleSelectView("priority-scoring")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "impact-assessment"
+              activeView === "priority-scoring"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <IdeaListIcon />
-            <span>Impact assessment</span>
+            <span>Priority Scoring</span>
           </button>
 
-          {/* View 3: Impact vs Effort (Matrix) */}
+          {/* View 3: Strategic Matrix */}
           <button
-            onClick={() => handleSelectView("impact-vs-effort")}
+            onClick={() => handleSelectView("strategic-matrix")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "impact-vs-effort"
+              activeView === "strategic-matrix"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <MatrixIcon />
-            <span>Impact vs effort</span>
+            <span>Strategic Matrix</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-semibold">
               Matrix
             </span>
           </button>
 
-          {/* View 4: Roadmap (Active Rocket from User Image) */}
+          {/* View 4: Horizon Roadmap (🚀) */}
           <button
-            onClick={() => handleSelectView("roadmap")}
+            onClick={() => handleSelectView("horizon-roadmap")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "roadmap"
+              activeView === "horizon-roadmap"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <span className="text-base leading-none">🚀</span>
-            <span>Roadmap</span>
+            <span>Horizon Roadmap</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 font-semibold font-mono">
               Now / Next
             </span>
           </button>
 
-          {/* View 5: Timeline */}
+          {/* View 5: Milestone Schedule */}
           <button
-            onClick={() => handleSelectView("timeline")}
+            onClick={() => handleSelectView("milestone-schedule")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "timeline"
+              activeView === "milestone-schedule"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <TimelineBarsIcon />
-            <span>Timeline</span>
+            <span>Milestone Schedule</span>
           </button>
 
-          {/* View 6: In Flight */}
+          {/* View 6: Active Delivery */}
           <button
-            onClick={() => handleSelectView("in-flight")}
+            onClick={() => handleSelectView("active-delivery")}
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition cursor-pointer whitespace-nowrap",
-              activeView === "in-flight"
+              activeView === "active-delivery"
                 ? "border-[#0C66E4] text-[#0C66E4] font-semibold bg-blue-50/50"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             )}
           >
             <span className="text-base leading-none">✈️</span>
-            <span>In flight</span>
+            <span>Active Delivery</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 font-semibold">
               Sprint
             </span>
@@ -412,9 +425,9 @@ export function DiscoveryClient() {
       </div>
 
       {/* ========================================================================= */}
-      {/* VIEW 1: ALL IDEAS (Table View) */}
+      {/* VIEW 1: INITIATIVE CATALOG */}
       {/* ========================================================================= */}
-      {activeView === "all-ideas" && (
+      {activeView === "initiatives" && (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -493,7 +506,7 @@ export function DiscoveryClient() {
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <button
-                      onClick={() => handleSelectView("roadmap")}
+                      onClick={() => handleSelectView("horizon-roadmap")}
                       className="text-xs text-[#0C66E4] hover:underline font-medium cursor-pointer"
                     >
                       View on Roadmap →
@@ -507,9 +520,9 @@ export function DiscoveryClient() {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 2: IMPACT ASSESSMENT (RICE Scoring & Weights) */}
+      {/* VIEW 2: PRIORITY SCORING (Value Scoring & Weights) */}
       {/* ========================================================================= */}
-      {activeView === "impact-assessment" && (
+      {activeView === "priority-scoring" && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between">
             <div className="space-y-0.5">
@@ -586,9 +599,9 @@ export function DiscoveryClient() {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 3: IMPACT VS EFFORT (2x2 Quadrant Matrix) */}
+      {/* VIEW 3: STRATEGIC MATRIX (2x2 Quadrant Prioritization) */}
       {/* ========================================================================= */}
-      {activeView === "impact-vs-effort" && (
+      {activeView === "strategic-matrix" && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-600">
             <span>2x2 Prioritization Matrix: Compare High-Value Quick Wins against Strategic Major Bets</span>
@@ -740,16 +753,16 @@ export function DiscoveryClient() {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 4: ROADMAP (Now / Next / Later - Rocket 🚀 Highlighted in User Image) */}
+      {/* VIEW 4: HORIZON ROADMAP (Now / Next / Later - Rocket 🚀 Highlighted View) */}
       {/* ========================================================================= */}
-      {activeView === "roadmap" && (
+      {activeView === "horizon-roadmap" && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🚀</span>
               <div>
                 <h3 className="text-xs font-bold text-blue-900">
-                  Product Roadmap Delivery Schedule
+                  Horizon Delivery Roadmap
                 </h3>
                 <p className="text-[11px] text-blue-700">
                   Organized by commitment horizon: Now (Current Sprint), Next (Upcoming Q1), and Later (H2 Horizon).
@@ -916,9 +929,9 @@ export function DiscoveryClient() {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 5: TIMELINE (Gantt Schedule) */}
+      {/* VIEW 5: MILESTONE SCHEDULE (Gantt Schedule) */}
       {/* ========================================================================= */}
-      {activeView === "timeline" && (
+      {activeView === "milestone-schedule" && (
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5 shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
@@ -965,16 +978,16 @@ export function DiscoveryClient() {
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 6: IN FLIGHT (Active Sprint Delivery ✈️) */}
+      {/* VIEW 6: ACTIVE DELIVERY (Sprint Delivery Pipeline ✈️) */}
       {/* ========================================================================= */}
-      {activeView === "in-flight" && (
+      {activeView === "active-delivery" && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-xl">✈️</span>
               <div>
                 <h3 className="text-xs font-bold text-purple-900">
-                  In Flight Development Tracker
+                  Active Delivery Pipeline Tracker
                 </h3>
                 <p className="text-[11px] text-purple-700">
                   Tracking features actively under implementation in Sprint 24.

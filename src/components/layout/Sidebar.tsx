@@ -109,7 +109,16 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentView = searchParams.get("view") || "roadmap";
+  const rawView = searchParams.get("view") || "horizon-roadmap";
+  const isViewActive = (viewKey: string) => {
+    if (viewKey === "initiatives") return rawView === "initiatives" || rawView === "all-ideas";
+    if (viewKey === "priority-scoring") return rawView === "priority-scoring" || rawView === "impact-assessment";
+    if (viewKey === "strategic-matrix") return rawView === "strategic-matrix" || rawView === "impact-vs-effort";
+    if (viewKey === "horizon-roadmap") return rawView === "horizon-roadmap" || rawView === "roadmap" || !rawView;
+    if (viewKey === "milestone-schedule") return rawView === "milestone-schedule" || rawView === "timeline";
+    if (viewKey === "active-delivery") return rawView === "active-delivery" || rawView === "in-flight";
+    return false;
+  };
 
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = React.useState(false);
@@ -547,52 +556,52 @@ export function Sidebar({
                   </Link>
                 </div>
 
-                {/* 4. Subcategory: Product Discovery Project Tree (From User's Screenshot) */}
+                {/* 4. Subcategory: Product Strategy & Discovery Tree (Tailored for CoreSync) */}
                 <div className="pt-2 border-t border-slate-100">
-                  {/* Discovery Project Header with Badge & '...' */}
+                  {/* Strategy Project Header with Badge & '...' */}
                   <div className="flex items-center justify-between px-1.5 py-1 rounded-lg hover:bg-slate-50 transition group relative">
                     <Link
                       href="/dashboard/discovery"
                       className="flex items-center gap-2 min-w-0 flex-1"
-                      title="My discovery project"
+                      title="Product Strategy Hub"
                     >
-                      {/* Jira Discovery 3-Color Badge */}
+                      {/* CoreSync Strategy 3-Color Badge */}
                       <div className="w-5 h-5 rounded-md bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-500 flex items-center justify-center shadow-xs flex-shrink-0">
                         <div className="w-2.5 h-2.5 rounded-xs bg-slate-900/40 flex items-center justify-center text-white text-[8px] font-bold">
                           ✦
                         </div>
                       </div>
                       <span className="text-xs font-semibold text-slate-800 truncate group-hover:text-[#0C66E4]">
-                        My discovery project
+                        Product Strategy Hub
                       </span>
                     </Link>
 
                     <button
                       onClick={() => setIsDiscoveryMenuOpen(!isDiscoveryMenuOpen)}
                       className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
-                      title="Project options"
+                      title="Strategy options"
                     >
                       <MoreHorizontal className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Discovery Project Options Dropdown Popover */}
+                    {/* Options Dropdown Popover */}
                     {isDiscoveryMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-50">
+                      <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-50">
                         <Link
-                          href="/dashboard/discovery?view=all-ideas"
+                          href="/dashboard/discovery?view=initiatives"
                           onClick={() => setIsDiscoveryMenuOpen(false)}
                           className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg"
                         >
                           <IdeaListIcon />
-                          <span>View All Ideas</span>
+                          <span>Initiative Catalog</span>
                         </Link>
                         <Link
-                          href="/dashboard/discovery?view=roadmap"
+                          href="/dashboard/discovery?view=horizon-roadmap"
                           onClick={() => setIsDiscoveryMenuOpen(false)}
                           className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg"
                         >
                           <span className="text-xs">🚀</span>
-                          <span>Open Roadmap</span>
+                          <span>Horizon Roadmap</span>
                         </Link>
                         <div className="my-1 border-t border-slate-100" />
                         <Link
@@ -601,124 +610,124 @@ export function Sidebar({
                           className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[#0C66E4] hover:bg-blue-50 font-medium rounded-lg"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span>Discovery Overview</span>
+                          <span>Strategy Overview</span>
                         </Link>
                       </div>
                     )}
                   </div>
 
-                  {/* Discovery Views Sub-Tree matching Jira screenshot */}
+                  {/* Strategy Views Sub-Tree with Original CoreSync Terminology */}
                   <div className="space-y-0.5 mt-1 pl-2.5 ml-2 border-l border-slate-200/60">
-                    {/* View 1: All ideas */}
+                    {/* View 1: Initiative Catalog */}
                     <Link
-                      href="/dashboard/discovery?view=all-ideas"
+                      href="/dashboard/discovery?view=initiatives"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && currentView === "all-ideas"
+                        pathname === "/dashboard/discovery" && isViewActive("initiatives")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="All ideas"
+                      title="Initiative Catalog"
                     >
                       <IdeaListIcon />
-                      <span className="truncate">All ideas</span>
+                      <span className="truncate">Initiative Catalog</span>
                     </Link>
 
-                    {/* View 2: Impact assessment */}
+                    {/* View 2: Priority Scoring */}
                     <Link
-                      href="/dashboard/discovery?view=impact-assessment"
+                      href="/dashboard/discovery?view=priority-scoring"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && currentView === "impact-assessment"
+                        pathname === "/dashboard/discovery" && isViewActive("priority-scoring")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="Impact assessment"
+                      title="Priority Scoring"
                     >
                       <IdeaListIcon />
-                      <span className="truncate">Impact assessment</span>
+                      <span className="truncate">Priority Scoring</span>
                     </Link>
 
-                    {/* View 3: Impact vs effort */}
+                    {/* View 3: Strategic Matrix */}
                     <Link
-                      href="/dashboard/discovery?view=impact-vs-effort"
+                      href="/dashboard/discovery?view=strategic-matrix"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && currentView === "impact-vs-effort"
+                        pathname === "/dashboard/discovery" && isViewActive("strategic-matrix")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="Impact vs effort"
+                      title="Strategic Matrix"
                     >
                       <MatrixIcon />
-                      <span className="truncate">Impact vs effort</span>
+                      <span className="truncate">Strategic Matrix</span>
                     </Link>
 
-                    {/* View 4: Roadmap (🚀 Active State in User's Screenshot) */}
+                    {/* View 4: Horizon Roadmap (🚀) */}
                     <Link
-                      href="/dashboard/discovery?view=roadmap"
+                      href="/dashboard/discovery?view=horizon-roadmap"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && (currentView === "roadmap" || !currentView)
+                        pathname === "/dashboard/discovery" && isViewActive("horizon-roadmap")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="Roadmap"
+                      title="Horizon Roadmap"
                     >
                       <span className="text-sm leading-none flex items-center justify-center flex-shrink-0">
                         🚀
                       </span>
-                      <span className="truncate font-medium">Roadmap</span>
+                      <span className="truncate font-medium">Horizon Roadmap</span>
                     </Link>
 
-                    {/* View 5: Timeline */}
+                    {/* View 5: Milestone Schedule */}
                     <Link
-                      href="/dashboard/discovery?view=timeline"
+                      href="/dashboard/discovery?view=milestone-schedule"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && currentView === "timeline"
+                        pathname === "/dashboard/discovery" && isViewActive("milestone-schedule")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="Timeline"
+                      title="Milestone Schedule"
                     >
                       <TimelineBarsIcon />
-                      <span className="truncate">Timeline</span>
+                      <span className="truncate">Milestone Schedule</span>
                     </Link>
 
-                    {/* View 6: In flight */}
+                    {/* View 6: Active Delivery */}
                     <Link
-                      href="/dashboard/discovery?view=in-flight"
+                      href="/dashboard/discovery?view=active-delivery"
                       className={cn(
                         "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs transition",
-                        pathname === "/dashboard/discovery" && currentView === "in-flight"
+                        pathname === "/dashboard/discovery" && isViewActive("active-delivery")
                           ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none -ml-[11px] pl-[8px]"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
-                      title="In flight"
+                      title="Active Delivery"
                     >
                       <span className="text-sm leading-none flex items-center justify-center flex-shrink-0">
                         ✈️
                       </span>
-                      <span className="truncate">In flight</span>
+                      <span className="truncate">Active Delivery</span>
                     </Link>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Collapsed State Icon for Product Discovery */}
+            {/* Collapsed State Icon */}
             {isCollapsed && (
               <div className="space-y-1 mt-2 flex flex-col items-center">
                 <Link
-                  href="/dashboard/discovery?view=roadmap"
+                  href="/dashboard/discovery?view=horizon-roadmap"
                   className={cn(
                     "w-9 h-9 flex items-center justify-center rounded-lg text-xs transition",
                     pathname === "/dashboard/discovery"
                       ? "bg-[#EBF3FF] text-[#0C66E4]"
                       : "text-slate-600 hover:bg-slate-100"
                   )}
-                  title="My discovery project (Roadmap)"
+                  title="Product Strategy Hub"
                 >
                   <span className="text-sm">🚀</span>
                 </Link>
