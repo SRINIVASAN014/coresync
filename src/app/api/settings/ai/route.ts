@@ -14,7 +14,7 @@ export async function GET() {
 
   return NextResponse.json({
     isConfigured,
-    model: "gemini-1.5-flash",
+    model: "gemini-3.8-flash",
   });
 }
 
@@ -34,8 +34,14 @@ export async function POST(req: Request) {
     // 1. Verify API Key with a lightweight test prompt against Google Gemini
     try {
       const testGenAI = new GoogleGenerativeAI(cleanKey);
-      const testModel = testGenAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      await testModel.generateContent("Test connection");
+      let testModel;
+      try {
+        testModel = testGenAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+        await testModel.generateContent("Test connection");
+      } catch {
+        testModel = testGenAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        await testModel.generateContent("Test connection");
+      }
     } catch (testError: any) {
       return NextResponse.json(
         {

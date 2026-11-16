@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
 import { TaskStatus, Priority, ProjectStatus, Role } from "@prisma/client";
+import { decomposeTaskSubtasksWithCoreSyncAI } from "@/lib/ai/coresync-engine";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy_key");
 
@@ -145,7 +146,6 @@ export async function decomposeTaskWithAI(taskId: string) {
     if (isConfigured) {
       try {
         const liveGenAI = new GoogleGenerativeAI(apiKey!);
-        const model = liveGenAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
           You are a Principal Software Engineer.
           Break down the following issue into 3 to 4 concrete, actionable, technical engineering subtasks.
@@ -156,8 +156,14 @@ export async function decomposeTaskWithAI(taskId: string) {
           Return ONLY a raw JSON array of strings:
           ["Subtask 1 title", "Subtask 2 title", "Subtask 3 title"]
         `;
-
-        const result = await model.generateContent(prompt);
+        let result;
+        try {
+          const model = liveGenAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+          result = await model.generateContent(prompt);
+        } catch {
+          const fallbackModel = liveGenAI.getGenerativeModel({ model: "gemini-flash-latest" });
+          result = await fallbackModel.generateContent(prompt);
+        }
         let responseText = result.response.text().trim();
         if (responseText.startsWith("```json")) {
           responseText = responseText.replace(/^```json\s*/, "").replace(/```$/, "").trim();
@@ -171,33 +177,11 @@ export async function decomposeTaskWithAI(taskId: string) {
     }
 
     if (!Array.isArray(subtaskTitles) || subtaskTitles.length === 0) {
-      // Intelligent fallback decomposition
-      const titleLower = task.title.toLowerCase();
-      if (titleLower.includes("auth") || titleLower.includes("login") || titleLower.includes("session")) {
-        subtaskTitles = [
-          "Configure session token verification and cookie policies",
-          "Implement login/register form validation and CSRF defenses",
-          "Add route protection middleware and unauthorized redirects",
-        ];
-      } else if (titleLower.includes("api") || titleLower.includes("endpoint") || titleLower.includes("database")) {
-        subtaskTitles = [
-          "Define TypeScript interfaces and Zod request/response schemas",
-          "Implement database query with relational eager-loading and indexing",
-          "Add unit and integration tests with error boundary coverage",
-        ];
-      } else if (titleLower.includes("ui") || titleLower.includes("component") || titleLower.includes("design") || titleLower.includes("layout")) {
-        subtaskTitles = [
-          "Establish responsive layout grid and Tailwind CSS utility tokens",
-          "Build accessible UI components with keyboard navigation support",
-          "Integrate client-side state hooks with optimistic UI updates",
-        ];
-      } else {
-        subtaskTitles = [
-          `Architect and scope technical implementation for "${task.title.slice(0, 32)}"`,
-          "Execute core engineering implementation and domain business logic",
-          "Perform automated testing, security validation, and code review",
-        ];
-      }
+      // Use CoreSync AI built-in subtask decomposition engine (< 5ms)
+      subtaskTitles = decomposeTaskSubtasksWithCoreSyncAI(
+        task.title,
+        task.description || undefined
+      );
     }
 
     const createdSubtasks = [];

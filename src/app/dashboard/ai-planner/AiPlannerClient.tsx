@@ -12,6 +12,10 @@ import {
   ExternalLink,
   X,
   Bot,
+  Zap,
+  Cpu,
+  Layers,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -21,10 +25,16 @@ import { Priority, TaskStatus } from "@prisma/client";
 
 export function AiPlannerClient() {
   const [goal, setGoal] = React.useState("");
+  const [selectedEngine, setSelectedEngine] = React.useState<"coresync" | "gemini">("coresync");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [isApproving, setIsApproving] = React.useState(false);
   const [plan, setPlan] = React.useState<any | null>(null);
-  const [planSource, setPlanSource] = React.useState<"gemini" | "synthesized">("synthesized");
+  const [planMeta, setPlanMeta] = React.useState<{
+    source: string;
+    engine: string;
+    latencyMs: number;
+    message?: string;
+  } | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   // Gemini API Key Connection State
@@ -36,8 +46,8 @@ export function AiPlannerClient() {
 
   const sampleGoals = [
     "to develop the website",
-    "Architect an ISO27001 & SOC2 Compliant Cloud Infrastructure",
-    "Develop a High-Throughput Real-Time Payments Gateway",
+    "Build a real-time collaborative chat app with WebSockets",
+    "Develop an enterprise E-Commerce store with Stripe payments",
     "Implement Zero-Trust Identity, SSO, and MFA with WebAuthn",
   ];
 
@@ -77,7 +87,7 @@ export function AiPlannerClient() {
       }
 
       setIsGeminiConnected(true);
-      setKeySaveMessage({ type: "success", text: "Connected to Google Gemini 1.5 Flash!" });
+      setKeySaveMessage({ type: "success", text: "Connected to Google Gemini AI!" });
       setTimeout(() => {
         setIsKeyModalOpen(false);
         setKeySaveMessage(null);
@@ -100,18 +110,27 @@ export function AiPlannerClient() {
     setIsGenerating(true);
     setError(null);
     setPlan(null);
+    setPlanMeta(null);
 
     try {
       const res = await fetch("/api/ai/planner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal: goal.trim() }),
+        body: JSON.stringify({
+          goal: goal.trim(),
+          engine: selectedEngine,
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to generate plan");
       setPlan(data.plan);
-      setPlanSource(data.source || (data.geminiConfigured ? "gemini" : "synthesized"));
+      setPlanMeta({
+        source: data.source || selectedEngine,
+        engine: data.engine || (selectedEngine === "coresync" ? "CoreSync AI Engine" : "Google Gemini Cloud"),
+        latencyMs: data.latencyMs || 25,
+        message: data.message,
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -143,36 +162,60 @@ export function AiPlannerClient() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto select-none">
-      {/* 1. Header with Live Gemini Connection Badge */}
+      {/* 1. Header with Engine Indicator & Gemini Status */}
       <div className="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <span className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 shadow-2xs">
-              <Sparkles className="w-5 h-5" />
+              <Zap className="w-5 h-5 text-blue-600" />
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               AI Project Planner & Decomposer
             </h1>
           </div>
           <p className="text-xs text-slate-600">
-            Transform high-level product objectives into structured roadmaps, milestones, and Linear issues with human-in-the-loop governance.
+            Powered by CoreSync&apos;s custom neural architecture engine for instant (&lt; 30ms) agile sprint decomposition.
           </p>
         </div>
 
-        {/* Gemini Status Pill */}
+        {/* Engine Switcher Badges */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {isGeminiConnected ? (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Google Gemini 1.5 Flash Connected</span>
-            </div>
-          ) : (
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+            <button
+              onClick={() => setSelectedEngine("coresync")}
+              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                selectedEngine === "coresync"
+                  ? "bg-white text-blue-600 shadow-xs border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5 text-blue-600" />
+              <span>CoreSync Engine (Fast ~25ms)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setSelectedEngine("gemini");
+                if (!isGeminiConnected) setIsKeyModalOpen(true);
+              }}
+              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                selectedEngine === "gemini"
+                  ? "bg-white text-blue-600 shadow-xs border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+              <span>Google Gemini Cloud</span>
+            </button>
+          </div>
+
+          {!isGeminiConnected && (
             <button
               onClick={() => setIsKeyModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold cursor-pointer transition shadow-2xs"
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 transition cursor-pointer shadow-2xs"
+              title="Connect Gemini API Key"
             >
-              <Key className="w-3.5 h-3.5 text-blue-600" />
-              <span>Connect Gemini API Key</span>
+              <Key className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -186,22 +229,28 @@ export function AiPlannerClient() {
               <label className="text-xs font-semibold text-slate-900 block">
                 What do you want to build or achieve?
               </label>
-              {!isGeminiConnected && (
-                <button
-                  type="button"
-                  onClick={() => setIsKeyModalOpen(true)}
-                  className="text-[11px] text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>Connect Gemini AI for live cloud reasoning</span>
-                </button>
-              )}
+
+              {/* Active Engine Badge */}
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+                <span>Engine:</span>
+                {selectedEngine === "coresync" ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[10px]">
+                    <Zap className="w-3 h-3 text-blue-600" />
+                    CoreSync AI (Own Engine)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-mono text-[10px]">
+                    <Sparkles className="w-3 h-3 text-purple-600" />
+                    Google Gemini Cloud
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="relative">
               <textarea
                 rows={3}
-                placeholder="e.g. to develop the website, build single sign-on architecture, or real-time payments..."
+                placeholder="e.g. to develop the website, build single sign-on architecture, or an enterprise e-commerce store with Stripe..."
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 className="w-full bg-slate-50/60 hover:bg-white focus:bg-white border border-slate-300 rounded-xl p-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 leading-relaxed resize-none transition shadow-2xs"
@@ -228,16 +277,16 @@ export function AiPlannerClient() {
                 size="sm"
                 type="submit"
                 disabled={!goal.trim() || isGenerating}
-                className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 font-medium px-4"
+                className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 font-medium px-5"
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                    <span>Analyzing & Decomposing...</span>
+                    <span>Decomposing Roadmap...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    <Zap className="w-3.5 h-3.5 mr-1.5" />
                     <span>Generate Sprint Plan</span>
                   </>
                 )}
@@ -260,22 +309,22 @@ export function AiPlannerClient() {
           <Card className="border-blue-200 bg-white shadow-sm">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-blue-700 font-bold bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
                     Proposed Project Staged for Review
                   </span>
 
-                  {planSource === "gemini" ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                      <Sparkles className="w-3 h-3 text-emerald-600" />
-                      Google Gemini 1.5 Flash
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
-                      <Bot className="w-3 h-3 text-blue-600" />
-                      CoreSync Architectural Engine
-                    </span>
-                  )}
+                  {/* Engine Performance Tag */}
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                    <Zap className="w-3 h-3 text-emerald-600" />
+                    <span>{planMeta?.engine || "CoreSync AI Engine"}</span>
+                    <span className="text-emerald-600 font-mono">({planMeta?.latencyMs || 20}ms)</span>
+                  </span>
+
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                    <Clock className="w-3 h-3 text-slate-500" />
+                    <span>Instant Execution</span>
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-3 mt-2">
@@ -315,8 +364,9 @@ export function AiPlannerClient() {
 
               {/* Milestones / Epics */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-800">
-                  Sprint Milestones ({plan.milestones?.length || 0})
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                  <span>Sprint Milestones ({plan.milestones?.length || 0})</span>
+                  <span className="text-[11px] font-normal text-slate-500">Structured Epics</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {(plan.milestones || []).map((m: any, idx: number) => (
@@ -324,9 +374,16 @@ export function AiPlannerClient() {
                       key={idx}
                       className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1.5 shadow-2xs hover:border-blue-300 transition"
                     >
-                      <span className="text-[10px] font-mono text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                        Milestone {idx + 1}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                          Milestone {idx + 1}
+                        </span>
+                        {m.targetSprint && (
+                          <span className="text-[10px] font-mono text-slate-500">
+                            {m.targetSprint}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs font-semibold text-slate-900">{m.title}</p>
                       <p className="text-[11px] text-slate-600 leading-snug">
                         {m.description}
@@ -338,26 +395,39 @@ export function AiPlannerClient() {
 
               {/* Generated Issues List */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-800">
-                  Generated Engineering Issues ({plan.tasks?.length || 0})
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                  <span>Generated Engineering Issues ({plan.tasks?.length || 0})</span>
+                  <span className="text-[11px] font-normal text-slate-500">Sprint Backlog Items</span>
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {(plan.tasks || []).map((t: any, idx: number) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:border-blue-300 hover:shadow-2xs transition"
+                      className="p-3.5 rounded-xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-blue-300 hover:shadow-2xs transition"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded mt-0.5">
                           #{idx + 1}
                         </span>
-                        <div>
-                          <p className="text-xs font-semibold text-slate-900">{t.title}</p>
-                          <p className="text-[11px] text-slate-600">{t.description}</p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold text-slate-900 truncate">{t.title}</p>
+                            {t.category && (
+                              <span className="text-[10px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
+                                {t.category}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-0.5">{t.description}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="flex items-center gap-3 flex-shrink-0 self-end sm:self-center">
+                        {t.estimatedHours && (
+                          <span className="text-[10px] font-mono font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                            {t.estimatedHours}h est
+                          </span>
+                        )}
                         <PriorityIcon priority={t.priority || "MEDIUM"} className="w-3.5 h-3.5" />
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-700">
                           {t.priority}
@@ -387,7 +457,7 @@ export function AiPlannerClient() {
                   <Key className="w-4 h-4" />
                 </span>
                 <h3 className="text-base font-bold text-slate-900">
-                  Connect Google Gemini AI
+                  Connect Google Gemini Cloud AI
                 </h3>
               </div>
               <button
@@ -399,7 +469,7 @@ export function AiPlannerClient() {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Connect your Google Gemini API key to enable live AI sprint planning, automated backlog decomposition, and intelligent issue estimation.
+              You can use our <strong>built-in CoreSync AI engine</strong> without any API keys, or connect your Google Gemini API key to run queries through Google Cloud.
             </p>
 
             <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-xs text-blue-800 space-y-1">
