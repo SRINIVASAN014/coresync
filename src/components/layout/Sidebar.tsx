@@ -257,43 +257,31 @@ export function Sidebar({
           isCollapsed ? "w-16" : "w-64"
         )}
       >
-        {/* 1. Jira-Inspired Top Header Row */}
+        {/* 1. Top Header Row */}
         <div className="h-14 border-b border-slate-200 flex items-center justify-between px-3 gap-2 flex-shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Collapse / Expand Toggle Button */}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer flex-shrink-0"
-              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCollapsed ? (
-                <PanelLeft className="w-4 h-4" />
-              ) : (
-                <PanelLeftClose className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* App Launcher 9-Dots Icon */}
+          {/* CoreSync Brand Wordmark */}
+          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 group">
+            <CoreSyncLogo size={28} />
             {!isCollapsed && (
-              <button
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer flex-shrink-0"
-                title="Apps & Integrations"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
+              <span className="text-base font-bold text-slate-900 tracking-tight truncate">
+                Core<span className="text-[#3B82F6]">Sync</span>
+              </span>
             )}
+          </Link>
 
-            {/* CoreSync Brand Wordmark */}
-            {!isCollapsed && (
-              <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0 group ml-0.5">
-                <CoreSyncLogo size={28} />
-                <span className="text-base font-bold text-slate-900 tracking-tight truncate">
-                  Core<span className="text-[#3B82F6]">Sync</span>
-                </span>
-              </Link>
+          {/* Collapse / Expand Toggle Button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer flex-shrink-0"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <PanelLeft className="w-4 h-4" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
             )}
-          </div>
+          </button>
         </div>
 
         {/* 2. Workspace Selector Button */}
