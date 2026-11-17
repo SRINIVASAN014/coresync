@@ -93,12 +93,6 @@ export default async function DashboardPage() {
       {/* 1. Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
-              Enterprise Workspace • {orgName}
-            </span>
-          </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Welcome back, {userName} 👋
           </h1>
