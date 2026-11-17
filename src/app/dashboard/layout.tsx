@@ -95,18 +95,28 @@ export default async function DashboardLayout({
   const allOrganizations = Array.from(uniqueOrgsMap.values());
 
   // 6. Fetch Active Projects for the Sidebar Navigation Hierarchy
-  const projects = await db.project.findMany({
-    where: activeMembership?.organizationId
-      ? { organizationId: activeMembership.organizationId }
-      : undefined,
-    select: {
-      id: true,
-      name: true,
-      key: true,
-    },
-    take: 6,
-    orderBy: { createdAt: "desc" },
-  });
+  const [projects, pendingApprovalsCount] = await Promise.all([
+    db.project.findMany({
+      where: activeMembership?.organizationId
+        ? { organizationId: activeMembership.organizationId }
+        : undefined,
+      select: {
+        id: true,
+        name: true,
+        key: true,
+      },
+      take: 6,
+      orderBy: { createdAt: "desc" },
+    }),
+    db.approvalRequest.count({
+      where: {
+        status: "PENDING",
+        ...(activeMembership?.organizationId
+          ? { organizationId: activeMembership.organizationId }
+          : {}),
+      },
+    }),
+  ]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-white text-slate-900">
@@ -124,6 +134,7 @@ export default async function DashboardLayout({
           userRole={userRole}
           organizations={allOrganizations}
           projects={projects}
+          pendingApprovalsCount={pendingApprovalsCount}
         />
       </Suspense>
 

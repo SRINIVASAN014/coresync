@@ -96,6 +96,7 @@ interface SidebarProps {
   userRole?: string;
   organizations?: OrgItem[];
   projects?: ProjectItem[];
+  pendingApprovalsCount?: number;
 }
 
 export function Sidebar({
@@ -106,6 +107,7 @@ export function Sidebar({
   userRole = "OWNER",
   organizations = [],
   projects = [],
+  pendingApprovalsCount = 0,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -771,9 +773,9 @@ export function Sidebar({
                 <ShieldCheck className="w-4 h-4 text-slate-500 flex-shrink-0" />
                 {!isCollapsed && <span>Approvals</span>}
               </div>
-              {!isCollapsed && (
+              {!isCollapsed && pendingApprovalsCount > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                  3
+                  {pendingApprovalsCount}
                 </span>
               )}
             </Link>
