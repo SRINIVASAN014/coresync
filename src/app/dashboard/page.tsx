@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           <Link href="/dashboard/ai-planner">
             <Button variant="ai" size="sm" className="font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-[#6554C0]" />
-              <span>AI Sprint Planner</span>
+              <span>AI Planner</span>
             </Button>
           </Link>
           <Link href="/dashboard/projects">
