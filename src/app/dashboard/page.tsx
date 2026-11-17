@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PriorityBadge } from "@/components/ui/PriorityBadge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { db } from "@/lib/db";
+import { cn } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -212,13 +214,36 @@ export default async function DashboardPage() {
               const progress =
                 taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
 
+              // Format owner name in clean title case
+              const rawName = project.owner?.name || "Enterprise Lead";
+              const formattedLead = rawName
+                .split(" ")
+                .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                .join(" ");
+
+              // Key badge styling per project domain
+              const keyBadgeStyles: Record<string, string> = {
+                IAM: "bg-emerald-50 text-emerald-700 border-emerald-200/90",
+                SEC: "bg-indigo-50 text-indigo-700 border-indigo-200/90",
+                GOV: "bg-purple-50 text-purple-700 border-purple-200/90",
+                MOB: "bg-sky-50 text-sky-700 border-sky-200/90",
+              };
+              const badgeStyle =
+                keyBadgeStyles[project.key.toUpperCase()] ||
+                "bg-slate-100 text-slate-700 border-slate-200/90";
+
               return (
                 <div
                   key={project.id}
-                  className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 px-3 rounded-lg transition"
+                  className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 px-3.5 rounded-lg transition-colors border border-transparent hover:border-slate-200/70"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <span
+                      className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center font-mono font-bold text-xs tracking-wider border shadow-2xs shrink-0 select-none",
+                        badgeStyle
+                      )}
+                    >
                       {project.key}
                     </span>
                     <div className="min-w-0">
@@ -228,42 +253,46 @@ export default async function DashboardPage() {
                       >
                         {project.name}
                       </Link>
-                      <p className="text-xs text-slate-500">
-                        Lead: {project.owner.name} • {completedCount} of {taskCount} tasks done
+                      <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span>Lead: {formattedLead}</span>
+                        <span className="text-slate-300">•</span>
+                        <span>{completedCount} of {taskCount} tasks completed</span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-6 self-end md:self-auto shrink-0">
                     {/* Progress Bar */}
-                    <div className="w-32 hidden sm:block">
-                      <div className="flex justify-between text-[11px] text-slate-500 mb-1">
-                        <span>Progress</span>
-                        <span className="font-mono text-slate-700 font-semibold">{progress}%</span>
+                    <div className="w-36 hidden sm:block">
+                      <div className="flex justify-between text-[11px] text-slate-500 mb-1.5 font-medium">
+                        <span>Sprint Progress</span>
+                        <span className="font-mono text-slate-800 font-semibold">{progress}%</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"
+                          className={cn(
+                            "h-full rounded-full transition-all duration-300",
+                            progress === 100
+                              ? "bg-emerald-500"
+                              : progress >= 50
+                              ? "bg-blue-600"
+                              : "bg-indigo-600"
+                          )}
                           style={{ width: `${progress}%` }}
                         />
                       </div>
                     </div>
 
-                    <Badge
-                      variant={
-                        project.priority === "URGENT"
-                          ? "danger"
-                          : project.priority === "HIGH"
-                          ? "warning"
-                          : "default"
-                      }
-                    >
-                      {project.priority}
-                    </Badge>
+                    <PriorityBadge priority={project.priority} />
 
                     <Link href={`/dashboard/project/${project.id}`}>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Open Board
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 border-slate-200/80 hover:border-slate-300 shadow-2xs group flex items-center gap-1.5"
+                      >
+                        <span>Open Board</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
                       </Button>
                     </Link>
                   </div>

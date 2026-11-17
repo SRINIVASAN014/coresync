@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Plus, FolderKanban, ArrowRight, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { PriorityBadge } from "@/components/ui/PriorityBadge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Priority } from "@prisma/client";
 import { createProject } from "@/app/actions/work";
+import { cn } from "@/lib/utils";
 
 interface ProjectsDirectoryClientProps {
   projects: any[];
@@ -97,63 +99,88 @@ export function ProjectsDirectoryClient({
           const progress =
             taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
 
+          // Format owner name in clean title case
+          const rawLead = p.owner?.name || "Enterprise Lead";
+          const formattedLead = rawLead
+            .split(" ")
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+
+          const keyBadgeStyles: Record<string, string> = {
+            IAM: "bg-emerald-50 text-emerald-700 border-emerald-200/90",
+            SEC: "bg-indigo-50 text-indigo-700 border-indigo-200/90",
+            GOV: "bg-purple-50 text-purple-700 border-purple-200/90",
+            MOB: "bg-sky-50 text-sky-700 border-sky-200/90",
+          };
+          const badgeStyle =
+            keyBadgeStyles[p.key.toUpperCase()] ||
+            "bg-slate-100 text-slate-700 border-slate-200/90";
+
           return (
             <Card
               key={p.id}
-              className="hover:border-blue-300 hover:shadow-md transition flex flex-col justify-between"
+              className="hover:border-slate-300 hover:shadow-md transition flex flex-col justify-between"
             >
-              <CardHeader className="space-y-2">
+              <CardHeader className="space-y-3 pb-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                  <span
+                    className={cn(
+                      "w-9 h-9 rounded-lg flex items-center justify-center font-mono font-bold text-xs tracking-wider border shadow-2xs select-none",
+                      badgeStyle
+                    )}
+                  >
                     {p.key}
                   </span>
-                  <Badge
-                    variant={
-                      p.priority === "URGENT"
-                        ? "danger"
-                        : p.priority === "HIGH"
-                        ? "warning"
-                        : "default"
-                    }
-                  >
-                    {p.priority}
-                  </Badge>
+                  <PriorityBadge priority={p.priority} />
                 </div>
 
-                <Link
-                  href={`/dashboard/project/${p.id}`}
-                  className="text-base font-bold text-slate-900 hover:text-blue-600 transition block truncate"
-                >
-                  {p.name}
-                </Link>
-
-                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                  {p.description || "No project description provided."}
-                </p>
+                <div>
+                  <Link
+                    href={`/dashboard/project/${p.id}`}
+                    className="text-base font-bold text-slate-900 hover:text-blue-600 transition block truncate"
+                  >
+                    {p.name}
+                  </Link>
+                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mt-1">
+                    {p.description || "No project description provided."}
+                  </p>
+                </div>
               </CardHeader>
 
               <CardContent className="space-y-4 pt-2">
                 {/* Progress */}
                 <div>
-                  <div className="flex justify-between text-[11px] text-slate-500 mb-1 font-mono">
+                  <div className="flex justify-between text-[11px] text-slate-500 mb-1.5 font-medium">
                     <span>
-                      {completedCount}/{taskCount} tasks done
+                      {completedCount} of {taskCount} tasks completed
                     </span>
-                    <span className="text-slate-700 font-semibold">{progress}%</span>
+                    <span className="text-slate-800 font-semibold font-mono">{progress}%</span>
                   </div>
                   <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-300 rounded-full"
+                      className={cn(
+                        "h-full rounded-full transition-all duration-300",
+                        progress === 100
+                          ? "bg-emerald-500"
+                          : progress >= 50
+                          ? "bg-blue-600"
+                          : "bg-indigo-600"
+                      )}
                       style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                  <span>Lead: {p.owner?.name || "Admin"}</span>
+                <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-[11px] text-slate-500">
+                  <span className="truncate max-w-[150px]">Lead: {formattedLead}</span>
                   <Link href={`/dashboard/project/${p.id}`}>
-                    <Button variant="outline" size="sm" className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                      Open Board <ArrowRight className="w-3 h-3 ml-1" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-slate-200 hover:border-slate-300 shadow-2xs group flex items-center gap-1"
+                    >
+                      <span>Open Board</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
                     </Button>
                   </Link>
                 </div>
