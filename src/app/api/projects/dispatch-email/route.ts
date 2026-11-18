@@ -4,6 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { sendProjectCreatedEmail, TaskSummaryItem } from "@/lib/email";
 
+export const dynamic = "force-dynamic";
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();

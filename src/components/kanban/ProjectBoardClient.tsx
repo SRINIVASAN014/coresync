@@ -92,6 +92,13 @@ export function ProjectBoardClient({
         }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorJson: any = null;
+        try { errorJson = JSON.parse(errorText); } catch {}
+        throw new Error(errorJson?.error || errorJson?.message || `Server responded with ${response.status}`);
+      }
+
       const res = await response.json();
 
       if (response.ok && res.success) {

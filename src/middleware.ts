@@ -11,9 +11,11 @@ const authMiddleware = withAuth({
 export default function middleware(req: NextRequest, event: any) {
   const host = req.headers.get("host") || "";
 
-  // Canonical redirect for ephemeral Vercel deployment preview URLs
-  // This ensures Google OAuth always receives the registered production callback domain.
+  // Canonical redirect for ephemeral Vercel deployment preview URLs (Pages only).
+  // IMPORTANT: Never redirect /api/* or non-GET requests, as cross-origin POST redirects trigger "Failed to fetch" in browsers.
   if (
+    req.method === "GET" &&
+    !req.nextUrl.pathname.startsWith("/api") &&
     host.includes("vercel.app") &&
     !host.includes("coresync-bay.vercel.app") &&
     !host.includes("localhost")
