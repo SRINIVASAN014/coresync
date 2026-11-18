@@ -32,8 +32,9 @@ function getAppBaseUrl(): string {
  * Configure Nodemailer transport using Gmail SMTP or standard SMTP credentials.
  */
 function getEmailTransporter() {
-  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+  const user = (process.env.GMAIL_USER || process.env.SMTP_USER || "").trim();
+  const rawPass = (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || "").trim();
+  const pass = rawPass.replace(/\s+/g, "");
 
   if (!user || !pass) {
     return null;
