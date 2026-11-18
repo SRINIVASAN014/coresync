@@ -287,6 +287,12 @@ export function IssueDetailDrawer({
                 className="w-full bg-white text-xs text-slate-800 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer shadow-2xs"
               >
                 <option value="">Unassigned</option>
+                {currentTask.assignee &&
+                  !teamMembers.some((m) => m.id === currentTask.assigneeId) && (
+                    <option value={currentTask.assigneeId}>
+                      {currentTask.assignee.name || currentTask.assignee.email}
+                    </option>
+                  )}
                 {teamMembers.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.name || member.email}

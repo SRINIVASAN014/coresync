@@ -152,8 +152,9 @@ export async function POST(req: Request) {
     }
 
     // Automatically link & assign tasks to recipient in DB so they appear immediately in "My Work"
+    let targetUser: any = null;
     try {
-      let targetUser = await db.user.findUnique({
+      targetUser = await db.user.findUnique({
         where: { email: targetEmail },
       });
 
@@ -241,6 +242,14 @@ export async function POST(req: Request) {
       recipient: targetEmail,
       role: roleLabel,
       tasksSplitCount: tasksList.length,
+      assignee: targetUser
+        ? {
+            id: targetUser.id,
+            name: targetUser.name || targetEmail.split("@")[0],
+            email: targetUser.email,
+          }
+        : null,
+      taskIds: filteredTasks.map((t) => t.id),
     });
   } catch (err: any) {
     console.error("API /api/projects/dispatch-email error:", err);

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Plus,
@@ -39,6 +40,13 @@ export function ProjectBoardClient({
   teamMembers,
   allProjects,
 }: ProjectBoardClientProps) {
+  const router = useRouter();
+  const [tasks, setTasks] = React.useState<any[]>(project.tasks || []);
+
+  React.useEffect(() => {
+    setTasks(project.tasks || []);
+  }, [project.tasks]);
+
   const [selectedTask, setSelectedTask] = React.useState<any | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
@@ -52,6 +60,13 @@ export function ProjectBoardClient({
   const [selectedTaskIds, setSelectedTaskIds] = React.useState<string[]>(
     (project.tasks || []).map((t: any) => t.id)
   );
+
+  // Sync selectedTaskIds when tasks change initially
+  React.useEffect(() => {
+    if (tasks.length > 0 && selectedTaskIds.length === 0) {
+      setSelectedTaskIds(tasks.map((t: any) => t.id));
+    }
+  }, [tasks]);
   const [isSendingEmail, setIsSendingEmail] = React.useState(false);
   const [emailStatusMsg, setEmailStatusMsg] = React.useState<{ type: "success" | "warning" | "error"; text: string } | null>(null);
 
@@ -64,10 +79,10 @@ export function ProjectBoardClient({
 
   // Toggle all tasks
   const toggleAllTasks = () => {
-    if (selectedTaskIds.length === (project.tasks || []).length) {
+    if (selectedTaskIds.length === tasks.length) {
       setSelectedTaskIds([]);
     } else {
-      setSelectedTaskIds((project.tasks || []).map((t: any) => t.id));
+      setSelectedTaskIds(tasks.map((t: any) => t.id));
     }
   };
 
@@ -102,6 +117,42 @@ export function ProjectBoardClient({
       const res = await response.json();
 
       if (response.ok && res.success) {
+        // Immediately update board tasks with the new assignee so the board reflects it with no reload!
+        const updatedAssignee = res.assignee || {
+          id: "assigned-member",
+          name: emailRecipient.split("@")[0],
+          email: emailRecipient,
+        };
+        const updatedTaskIds = res.taskIds || selectedTaskIds;
+
+        if (dispatchMode === "ROLE_TARGETED" && updatedTaskIds.length > 0) {
+          setTasks((prev) =>
+            prev.map((t) =>
+              updatedTaskIds.includes(t.id)
+                ? {
+                    ...t,
+                    assigneeId: updatedAssignee.id,
+                    assignee: updatedAssignee,
+                  }
+                : t
+            )
+          );
+
+          if (selectedTask && updatedTaskIds.includes(selectedTask.id)) {
+            setSelectedTask((prev: any) =>
+              prev
+                ? {
+                    ...prev,
+                    assigneeId: updatedAssignee.id,
+                    assignee: updatedAssignee,
+                  }
+                : null
+            );
+          }
+        }
+
+        router.refresh();
+
         if (res.mode === "FAN_OUT_ALL") {
           setEmailStatusMsg({
             type: "success",
@@ -110,17 +161,17 @@ export function ProjectBoardClient({
         } else if (res.emailStatus?.delivered) {
           setEmailStatusMsg({
             type: "success",
-            text: `✅ Delivered ${res.tasksSplitCount} allocated deliverables to ${res.recipient} [${res.role}] via Gmail!`,
+            text: `✅ Delivered ${res.tasksSplitCount} allocated deliverables to ${res.recipient} [${res.role}] via Gmail! Assigned tasks are now visible on My Work and updated on the board.`,
           });
         } else if (res.emailStatus?.simulated) {
           setEmailStatusMsg({
             type: "warning",
-            text: `⚠️ Simulation Mode: Prepared ${res.tasksSplitCount} tasks for ${res.recipient} [${res.role}]. Add GMAIL_USER and GMAIL_APP_PASSWORD in Vercel to deliver directly to inboxes.`,
+            text: `⚠️ Simulation Mode: Assigned ${res.tasksSplitCount} tasks to ${res.recipient} [${res.role}]. Visible in My Work and board! Add GMAIL_USER and GMAIL_APP_PASSWORD in Vercel to deliver directly to inboxes.`,
           });
         } else {
           setEmailStatusMsg({
             type: "success",
-            text: `Dispatched to ${res.recipient}.`,
+            text: `Dispatched & assigned to ${res.recipient}.`,
           });
         }
       } else {
@@ -163,7 +214,7 @@ export function ProjectBoardClient({
   };
 
   // Filter tasks
-  const filteredTasks = (project.tasks || []).filter((task: any) => {
+  const filteredTasks = tasks.filter((task: any) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.key.toLowerCase().includes(searchQuery.toLowerCase());
@@ -328,6 +379,8 @@ export function ProjectBoardClient({
                         <span className="truncate max-w-[90px] font-mono text-slate-600">
                           {task.assignee?.name
                             ? task.assignee.name.split(" ")[0]
+                            : task.assignee?.email
+                            ? task.assignee.email.split("@")[0]
                             : "Unassigned"}
                         </span>
                       </div>
@@ -432,7 +485,7 @@ export function ProjectBoardClient({
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-500 mt-0.5">
-                    Priority: <strong className="text-slate-700">{project.priority || "MEDIUM"}</strong> &bull; Total Tasks: <strong className="text-slate-700">{(project.tasks || []).length}</strong>
+                    Priority: <strong className="text-slate-700">{project.priority || "MEDIUM"}</strong> &bull; Total Tasks: <strong className="text-slate-700">{tasks.length}</strong>
                   </div>
                 </div>
                 <div className="text-right">
@@ -481,19 +534,19 @@ export function ProjectBoardClient({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="font-semibold text-slate-700">
-                        Allocated Tasks for this Role ({selectedTaskIds.length}/{(project.tasks || []).length})
+                        Allocated Tasks for this Role ({selectedTaskIds.length}/{tasks.length})
                       </label>
                       <button
                         type="button"
                         onClick={toggleAllTasks}
                         className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold"
                       >
-                        {selectedTaskIds.length === (project.tasks || []).length ? "Deselect All" : "Select All"}
+                        {selectedTaskIds.length === tasks.length ? "Deselect All" : "Select All"}
                       </button>
                     </div>
 
                     <div className="max-h-36 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white">
-                      {(project.tasks || []).map((t: any) => {
+                      {tasks.map((t: any) => {
                         const isChecked = selectedTaskIds.includes(t.id);
                         return (
                           <div
@@ -524,7 +577,7 @@ export function ProjectBoardClient({
                           </div>
                         );
                       })}
-                      {(project.tasks || []).length === 0 && (
+                      {tasks.length === 0 && (
                         <div className="p-3 text-center text-slate-400 text-[11px]">No tasks created yet</div>
                       )}
                     </div>
@@ -537,7 +590,7 @@ export function ProjectBoardClient({
                     <span>Automated MNC Enterprise Fan-Out Mode</span>
                   </div>
                   <p className="leading-relaxed">
-                    CoreSync will automatically inspect all <strong>{(project.tasks || []).length} work items</strong> in this project, group them by their assigned team members, and dispatch tailored role-specific checklists directly to each member&apos;s Gmail address.
+                    CoreSync will automatically inspect all <strong>{tasks.length} work items</strong> in this project, group them by their assigned team members, and dispatch tailored role-specific checklists directly to each member&apos;s Gmail address.
                   </p>
                   <div className="bg-white/80 rounded-lg p-2.5 border border-blue-100 text-[11px] text-slate-700 space-y-1">
                     <div>&bull; <strong>Developers:</strong> Receive implementation items & PR tracking links.</div>

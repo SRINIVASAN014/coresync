@@ -14,6 +14,9 @@ import {
   ChevronDown,
   Loader2,
   Check,
+  User,
+  Users,
+  Send,
 } from "lucide-react";
 import { TaskStatus, Priority } from "@prisma/client";
 import { updateTaskStatus } from "@/app/actions/work";
@@ -25,28 +28,53 @@ interface MyWorkClientProps {
     name?: string | null;
     email: string;
   };
-  initialTasks: any[];
+  assignedTasks: any[];
+  teamTasks: any[];
 }
 
-export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
-  const [tasks, setTasks] = React.useState<any[]>(initialTasks);
+export function MyWorkClient({ user, assignedTasks, teamTasks }: MyWorkClientProps) {
+  // Determine initial scope: If user has personal assigned tasks, show them; otherwise show team deliverables
+  const [scope, setScope] = React.useState<"ASSIGNED_TO_ME" | "DELEGATED_TO_TEAM" | "ALL">(
+    assignedTasks.length > 0 ? "ASSIGNED_TO_ME" : "ALL"
+  );
   const [activeTab, setActiveTab] = React.useState<string>("ALL");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [updatingTaskId, setUpdatingTaskId] = React.useState<string | null>(null);
 
+  // Separate tasks assigned to others (delegated work)
+  const delegatedTasks = React.useMemo(() => {
+    return teamTasks.filter((t) => t.assigneeId && t.assigneeId !== user.id);
+  }, [teamTasks, user.id]);
+
+  // Active pool of tasks according to scope
+  const activeTaskPool = React.useMemo(() => {
+    if (scope === "ASSIGNED_TO_ME") return assignedTasks;
+    if (scope === "DELEGATED_TO_TEAM") return delegatedTasks;
+    return teamTasks;
+  }, [scope, assignedTasks, delegatedTasks, teamTasks]);
+
+  const [taskList, setTaskList] = React.useState<any[]>(activeTaskPool);
+
+  // Sync taskList when activeTaskPool changes
+  React.useEffect(() => {
+    setTaskList(activeTaskPool);
+  }, [activeTaskPool]);
+
   // Status Counts
-  const todoCount = tasks.filter((t) => t.status === TaskStatus.TODO || t.status === TaskStatus.BACKLOG).length;
-  const inProgressCount = tasks.filter((t) => t.status === TaskStatus.IN_PROGRESS).length;
-  const inReviewCount = tasks.filter((t) => t.status === TaskStatus.IN_REVIEW).length;
-  const doneCount = tasks.filter((t) => t.status === TaskStatus.DONE).length;
-  const urgentCount = tasks.filter((t) => t.priority === Priority.URGENT || t.priority === Priority.HIGH).length;
+  const todoCount = taskList.filter((t) => t.status === TaskStatus.TODO || t.status === TaskStatus.BACKLOG).length;
+  const inProgressCount = taskList.filter((t) => t.status === TaskStatus.IN_PROGRESS).length;
+  const inReviewCount = taskList.filter((t) => t.status === TaskStatus.IN_REVIEW).length;
+  const doneCount = taskList.filter((t) => t.status === TaskStatus.DONE).length;
+  const urgentCount = taskList.filter((t) => t.priority === Priority.URGENT || t.priority === Priority.HIGH).length;
 
   // Filter tasks based on activeTab and searchQuery
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = taskList.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.project?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      task.project?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.assignee?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.assignee?.name?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
 
@@ -65,7 +93,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
     try {
       const res = await updateTaskStatus(taskId, newStatus);
       if (res.success) {
-        setTasks((prev) =>
+        setTaskList((prev) =>
           prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
         );
       }
@@ -84,17 +112,17 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Personal Work Cockpit
+              Enterprise Work Cockpit
             </span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
             <span>My Work & Deliverables</span>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              {tasks.length} Assigned
+              {filteredTasks.length} Visible
             </span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Deliverables allocated to <strong>{user.name || user.email}</strong> across all active project sprints.
+            Deliverables allocated across project sprints for <strong>{user.name || user.email}</strong> and team.
           </p>
         </div>
 
@@ -106,7 +134,46 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
         </Link>
       </div>
 
-      {/* 2. KPI Summary Cards */}
+      {/* 2. Work Scope Switcher (Assigned to Me vs Delegated / Sent to Team vs All) */}
+      <div className="bg-slate-100 p-1 rounded-xl grid grid-cols-3 gap-1 text-xs font-semibold">
+        <button
+          onClick={() => setScope("ASSIGNED_TO_ME")}
+          className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            scope === "ASSIGNED_TO_ME"
+              ? "bg-white text-blue-600 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <User className="w-3.5 h-3.5" />
+          <span>Assigned to Me ({assignedTasks.length})</span>
+        </button>
+
+        <button
+          onClick={() => setScope("DELEGATED_TO_TEAM")}
+          className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            scope === "DELEGATED_TO_TEAM"
+              ? "bg-white text-blue-600 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Send className="w-3.5 h-3.5" />
+          <span>Delegated / Sent to Team ({delegatedTasks.length})</span>
+        </button>
+
+        <button
+          onClick={() => setScope("ALL")}
+          className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+            scope === "ALL"
+              ? "bg-white text-blue-600 shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>All Project Tasks ({teamTasks.length})</span>
+        </button>
+      </div>
+
+      {/* 3. KPI Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium mb-1">
@@ -114,7 +181,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
             <Clock className="w-4 h-4 text-blue-500" />
           </div>
           <div className="text-2xl font-bold text-slate-900">{todoCount}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Awaiting start</div>
+          <div className="text-[11px] text-slate-400 mt-0.5">Awaiting execution</div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
@@ -145,14 +212,14 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
         </div>
       </div>
 
-      {/* 3. Toolbar: Search & Status Filter Tabs */}
+      {/* 4. Toolbar: Search & Status Filter Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
         {/* Search */}
         <div className="flex items-center gap-2 flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 ml-2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search deliverables by title, key, or project..."
+            placeholder="Filter by title, key, project, or assignee email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
@@ -169,7 +236,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            All ({tasks.length})
+            All ({taskList.length})
           </button>
           <button
             onClick={() => setActiveTab("TODO")}
@@ -214,7 +281,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
         </div>
       </div>
 
-      {/* 4. Deliverables List */}
+      {/* 5. Deliverables List */}
       <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
         {filteredTasks.map((task) => {
           const isUpdating = updatingTaskId === task.id;
@@ -223,7 +290,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
               key={task.id}
               className="p-3.5 hover:bg-slate-50/80 transition flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
             >
-              {/* Left Column: Key, Title, Project */}
+              {/* Left Column: Key, Title, Project, Assignee */}
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 {/* 1-Click Status Quick Button */}
                 <button
@@ -259,7 +326,7 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
                     </Link>
                   </div>
 
-                  <div className="flex items-center gap-2.5 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-500">
                     <Link
                       href={`/dashboard/project/${task.projectId}`}
                       className="hover:underline flex items-center gap-1 text-slate-600 font-medium"
@@ -267,9 +334,28 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
                       <span>{task.project?.name || "Project"}</span>
                       <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
                     </Link>
+
                     <span>&bull;</span>
+
+                    {/* Assignee Badge */}
+                    <div className="flex items-center gap-1 text-slate-600">
+                      <User className="w-3 h-3 text-blue-500" />
+                      <span>
+                        {task.assignee?.name || task.assignee?.email ? (
+                          <span className="font-medium text-slate-800">
+                            {task.assignee.name || task.assignee.email}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Unassigned</span>
+                        )}
+                      </span>
+                    </div>
+
                     {task.description && (
-                      <span className="truncate max-w-md text-slate-400">{task.description}</span>
+                      <>
+                        <span>&bull;</span>
+                        <span className="truncate max-w-sm text-slate-400">{task.description}</span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -329,9 +415,9 @@ export function MyWorkClient({ user, initialTasks }: MyWorkClientProps) {
             <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
               <CheckCircle2 className="w-6 h-6 text-slate-400" />
             </div>
-            <h3 className="text-sm font-bold text-slate-800">All clear! No deliverables match this filter.</h3>
+            <h3 className="text-sm font-bold text-slate-800">No deliverables found in this scope</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Any tasks assigned to you by project managers or dispatched via Gmail will appear automatically in this cockpit.
+              Switch between <strong>Assigned to Me</strong> and <strong>Delegated to Team</strong> above to view all tasks.
             </p>
           </div>
         )}

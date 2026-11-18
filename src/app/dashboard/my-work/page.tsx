@@ -6,7 +6,7 @@ import { MyWorkClient } from "./MyWorkClient";
 
 export const metadata = {
   title: "My Work | CoreSync Enterprise",
-  description: "View and execute all your assigned deliverables across projects",
+  description: "View, track, and execute deliverables allocated across projects",
 };
 
 export default async function MyWorkPage() {
@@ -23,37 +23,38 @@ export default async function MyWorkPage() {
     redirect("/login");
   }
 
-  // 1. Fetch tasks assigned directly to the current user
-  let assignedTasks = await db.task.findMany({
+  // 1. Deliverables assigned directly to the logged-in user
+  const assignedToMe = await db.task.findMany({
     where: { assigneeId: user.id },
     include: {
       project: { select: { id: true, name: true, key: true, priority: true } },
+      assignee: { select: { id: true, name: true, email: true } },
     },
     orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
   });
 
-  // 2. Intelligent fallback: if no direct assignments yet, show tasks from projects they own or belong to
-  if (assignedTasks.length === 0) {
-    assignedTasks = await db.task.findMany({
-      where: {
+  // 2. Deliverables across projects where the user is Owner, Manager, or Member
+  const allWorkspaceTasks = await db.task.findMany({
+    where: {
+      project: {
         OR: [
-          { creatorId: user.id },
-          { project: { ownerId: user.id } },
-          { project: { members: { some: { userId: user.id } } } },
+          { ownerId: user.id },
+          { members: { some: { userId: user.id } } },
         ],
       },
-      include: {
-        project: { select: { id: true, name: true, key: true, priority: true } },
-      },
-      take: 25,
-      orderBy: [{ createdAt: "desc" }],
-    });
-  }
+    },
+    include: {
+      project: { select: { id: true, name: true, key: true, priority: true } },
+      assignee: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+  });
 
   return (
     <MyWorkClient
       user={{ id: user.id, name: user.name, email: user.email }}
-      initialTasks={assignedTasks}
+      assignedTasks={assignedToMe}
+      teamTasks={allWorkspaceTasks}
     />
   );
 }
