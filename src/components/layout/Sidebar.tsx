@@ -35,6 +35,7 @@ import {
   Rocket,
   Plane,
   Mail,
+  CheckSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
@@ -727,6 +728,28 @@ export function Sidebar({
 
           {/* Section C: Views & Approvals */}
           <div className="pt-2 border-t border-slate-100 space-y-0.5">
+            {/* My Work (Personal Employee Cockpit) */}
+            <Link
+              href="/dashboard/my-work"
+              className={cn(
+                "flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition",
+                pathname === "/dashboard/my-work"
+                  ? "bg-[#EBF3FF] text-[#0C66E4] font-semibold border-l-[3px] border-[#0C66E4] rounded-l-none"
+                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+              )}
+              title="My Work & Assigned Deliverables"
+            >
+              <div className="flex items-center gap-3">
+                <CheckSquare className="w-4 h-4 text-[#0C66E4] flex-shrink-0" />
+                {!isCollapsed && <span className="font-semibold text-slate-800">My Work</span>}
+              </div>
+              {!isCollapsed && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                  Assigned
+                </span>
+              )}
+            </Link>
+
             {/* Filters */}
             <Link
               href="/dashboard/kanban"

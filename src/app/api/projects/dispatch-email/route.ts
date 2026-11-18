@@ -151,12 +151,52 @@ export async function POST(req: Request) {
       filteredTasks = project.tasks.filter((t) => selectedTaskIds.includes(t.id));
     }
 
+    // Automatically link & assign tasks to recipient in DB so they appear immediately in "My Work"
+    try {
+      let targetUser = await db.user.findUnique({
+        where: { email: targetEmail },
+      });
+
+      if (!targetUser) {
+        targetUser = await db.user.create({
+          data: {
+            email: targetEmail,
+            name: recipientName || targetEmail.split("@")[0],
+          },
+        });
+      }
+
+      // Ensure membership in project
+      const existingMember = await db.projectMember.findFirst({
+        where: { projectId: project.id, userId: targetUser.id },
+      });
+      if (!existingMember) {
+        await db.projectMember.create({
+          data: {
+            projectId: project.id,
+            userId: targetUser.id,
+            role: "MEMBER",
+          },
+        });
+      }
+
+      // Assign the selected split tasks to this employee
+      if (filteredTasks.length > 0) {
+        await db.task.updateMany({
+          where: { id: { in: filteredTasks.map((t) => t.id) } },
+          data: { assigneeId: targetUser.id },
+        });
+      }
+    } catch (assignErr) {
+      console.warn("Non-blocking task assignment error:", assignErr);
+    }
+
     const tasksList: TaskSummaryItem[] = filteredTasks.map((t) => ({
       key: t.key,
       title: t.title,
       priority: t.priority,
       status: t.status,
-      assigneeName: t.assignee?.name,
+      assigneeName: recipientName || targetEmail.split("@")[0],
     }));
 
     const roleLabel = recipientRole || "CONTRIBUTOR";

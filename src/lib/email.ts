@@ -255,20 +255,31 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
               </div>
               ` : ""}
 
-              <!-- Call to Action Button -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+              <!-- Call to Action Buttons -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 8px;">
                 <tr>
                   <td align="center">
-                    <a href="${projectUrl}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35); letter-spacing: 0.2px;">
-                      Open Project Board & Tasks &rarr;
-                    </a>
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" style="padding: 6px;">
+                          <a href="${baseUrl}/dashboard/my-work" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35); letter-spacing: 0.2px;">
+                            ⚡ View My Work & Tasks &rarr;
+                          </a>
+                        </td>
+                        <td align="center" style="padding: 6px;">
+                          <a href="${projectUrl}" target="_blank" style="display: inline-block; background-color: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; text-decoration: none; font-size: 13px; font-weight: 600; padding: 11px 20px; border-radius: 8px;">
+                            Open Project Board
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <div style="text-align: center; margin-top: 16px;">
-                <span style="font-size: 12px; color: #94a3b8;">
-                  Direct link: <a href="${projectUrl}" style="color: #2563eb; text-decoration: underline;">${projectUrl}</a>
+              <div style="text-align: center; margin-top: 14px;">
+                <span style="font-size: 11px; color: #94a3b8;">
+                  My Work Portal: <a href="${baseUrl}/dashboard/my-work" style="color: #2563eb; text-decoration: underline;">${baseUrl}/dashboard/my-work</a>
                 </span>
               </div>
             </td>
