@@ -10,6 +10,8 @@ export interface ProjectEmailNotificationParams {
   priority?: string | null;
   organizationName?: string | null;
   tasksCount?: number;
+  subjectPrefix?: string;
+  headline?: string;
 }
 
 /**
@@ -76,12 +78,17 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
   const priorityLabel = (priority || "MEDIUM").toUpperCase();
   const orgLabel = organizationName || "Global CyberTech Solutions";
 
+  const subjectText = params.subjectPrefix
+    ? `${params.subjectPrefix}: ${projectName} [${projectKey}]`
+    : `⚡ [CoreSync] Project Notification: ${projectName} [${projectKey}]`;
+  const headlineText = params.headline || "Project Workspace Overview";
+
   // If credentials are not set, log clean telemetry for previewing
   if (!transporter) {
     console.log("------------------------------------------------------------");
     console.log("[CoreSync Email Telemetry - Mock Dispatch]");
     console.log(`To: ${toName ? `${toName} <${toEmail}>` : toEmail}`);
-    console.log(`Subject: [CoreSync] New Project Created: ${projectName} (${projectKey})`);
+    console.log(`Subject: ${subjectText}`);
     console.log(`Project URL: ${projectUrl}`);
     console.log(`Notice: Configure GMAIL_USER and GMAIL_APP_PASSWORD in .env to dispatch live emails.`);
     console.log("------------------------------------------------------------");
@@ -134,13 +141,13 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
           <tr>
             <td style="padding: 32px 32px 20px 32px;">
               <div style="font-size: 13px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-                Project Provisioning Confirmed
+                ${headlineText}
               </div>
               <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0; line-height: 1.3;">
                 ${projectName}
               </h1>
               <p style="font-size: 14px; color: #475569; margin: 0 0 24px 0; line-height: 1.6;">
-                Hello <strong>${toName || "Owner"}</strong>, your project workspace has been successfully initialized in <strong>${orgLabel}</strong>. You are assigned as the <strong>Project Owner</strong> with full administrative and governance permissions.
+                Hello <strong>${toName || "Owner"}</strong>, this project update has been prepared for <strong>${orgLabel}</strong>. Full project details, tasks, and access link are provided below.
               </p>
 
               <!-- Specs Box -->
@@ -245,8 +252,8 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
     const info = await transporter.sendMail({
       from: `"CoreSync Notifications" <${senderEmail}>`,
       to: toEmail,
-      subject: `⚡ [CoreSync] New Project Created: ${projectName} [${projectKey}]`,
-      text: `Hello ${toName || "Owner"},\n\nYour new project "${projectName}" [${projectKey}] has been successfully initialized in CoreSync.\n\nOpen your project board: ${projectUrl}\n\nOrganization: ${orgLabel}\nPriority: ${priorityLabel}\n\nCoreSync Enterprise Platform`,
+      subject: subjectText,
+      text: `Hello ${toName || "Owner"},\n\nYour project "${projectName}" [${projectKey}] status has been updated in CoreSync.\n\nOpen your project board: ${projectUrl}\n\nOrganization: ${orgLabel}\nPriority: ${priorityLabel}\n\nCoreSync Enterprise Platform`,
       html: htmlContent,
     });
 

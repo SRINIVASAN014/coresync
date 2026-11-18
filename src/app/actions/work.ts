@@ -384,6 +384,79 @@ export async function createProject(data: {
 }
 
 /**
+ * Dispatch an existing project's summary and access link via Gmail to any email address
+ */
+export async function sendProjectViaEmail(params: {
+  projectId: string;
+  recipientEmail?: string;
+  note?: string;
+}) {
+  try {
+    let session = null;
+    try {
+      session = await getServerSession(authOptions);
+    } catch {
+      // Graceful fallback when outside Next.js request context
+    }
+
+    const user = await db.user.findFirst({
+      where: session?.user?.email ? { email: session.user.email } : undefined,
+    });
+
+    const project = await db.project.findUnique({
+      where: { id: params.projectId },
+      include: {
+        organization: true,
+        tasks: {
+          select: { id: true, title: true, status: true, priority: true, key: true },
+        },
+      },
+    });
+
+    if (!project) throw new Error("Project not found");
+
+    const targetEmail = params.recipientEmail?.trim() || user?.email;
+    if (!targetEmail) throw new Error("Recipient email is required");
+
+    const emailStatus = await sendProjectCreatedEmail({
+      toEmail: targetEmail,
+      toName: user?.name,
+      projectName: project.name,
+      projectKey: project.key,
+      projectId: project.id,
+      description: params.note ? `${project.description}\n\nNote: ${params.note}` : project.description,
+      priority: project.priority,
+      organizationName: project.organization?.name,
+      tasksCount: project.tasks.length,
+      subjectPrefix: "⚡ [CoreSync] Project Status Report",
+      headline: "Project Workspace & Status Report",
+    });
+
+    // Record in Audit Ledger
+    await db.auditLog.create({
+      data: {
+        action: "PROJECT_DISPATCHED_VIA_GMAIL",
+        entity: "Project",
+        entityId: project.id,
+        organizationId: project.organizationId,
+        userId: user?.id,
+        userEmail: user?.email,
+        details: JSON.stringify({
+          recipient: targetEmail,
+          delivered: emailStatus.delivered,
+          simulated: emailStatus.simulated || false,
+        }),
+      },
+    });
+
+    return { success: true, emailStatus, recipient: targetEmail };
+  } catch (error: any) {
+    console.error("Failed to dispatch project via Gmail:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Switch active workspace (tenant isolation context)
  */
 export async function switchActiveOrganization(organizationId: string) {
