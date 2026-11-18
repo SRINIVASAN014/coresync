@@ -1,5 +1,13 @@
 import nodemailer from "nodemailer";
 
+export interface TaskSummaryItem {
+  key: string;
+  title: string;
+  status?: string;
+  priority?: string;
+  assigneeName?: string | null;
+}
+
 export interface ProjectEmailNotificationParams {
   toEmail: string;
   toName?: string | null;
@@ -12,6 +20,8 @@ export interface ProjectEmailNotificationParams {
   tasksCount?: number;
   subjectPrefix?: string;
   headline?: string;
+  recipientRole?: string | null;
+  tasksList?: TaskSummaryItem[];
 }
 
 /**
@@ -47,6 +57,9 @@ function getEmailTransporter() {
       user,
       pass,
     },
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
   });
 }
 
@@ -65,6 +78,8 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
     priority,
     organizationName,
     tasksCount,
+    recipientRole,
+    tasksList,
   } = params;
 
   if (!toEmail) {
@@ -148,11 +163,15 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
                 ${projectName}
               </h1>
               <p style="font-size: 14px; color: #475569; margin: 0 0 24px 0; line-height: 1.6;">
-                Hello <strong>${toName || "Owner"}</strong>, this project update has been prepared for <strong>${orgLabel}</strong>. Full project details, tasks, and access link are provided below.
+                Hello <strong>${toName || "Team Member"}</strong>, ${
+                  recipientRole
+                    ? `you have been allocated deliverables as <span style="display: inline-block; background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 12px; text-transform: uppercase;">${recipientRole}</span> on project <strong>${projectName}</strong> in <strong>${orgLabel}</strong>.`
+                    : `this project briefing has been dispatched for <strong>${orgLabel}</strong>.`
+                } Your allocated sprint tasks and workspace links are provided below.
               </p>
 
               <!-- Specs Box -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
                     <table role="presentation" width="100%">
@@ -209,6 +228,35 @@ export async function sendProjectCreatedEmail(params: ProjectEmailNotificationPa
                   </td>
                 </tr>` : ""}
               </table>
+
+              <!-- Role-Specific Split Task Backlog Table (MNC Enterprise) -->
+              ${tasksList && tasksList.length > 0 ? `
+              <div style="margin-bottom: 28px;">
+                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  📋 Allocated Work Items (${tasksList.length})
+                </div>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; font-size: 12px; border-collapse: collapse;">
+                  <thead>
+                    <tr style="background-color: #f1f5f9; text-align: left; color: #475569; font-weight: 700; border-bottom: 1px solid #cbd5e1;">
+                      <th style="padding: 10px 12px; width: 85px;">Key</th>
+                      <th style="padding: 10px 12px;">Task Description</th>
+                      <th style="padding: 10px 12px; width: 85px;">Priority</th>
+                      <th style="padding: 10px 12px; width: 95px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${tasksList.map((t, idx) => `
+                      <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-top: 1px solid #e2e8f0;">
+                        <td style="padding: 10px 12px; font-family: monospace; font-weight: bold; color: #2563eb;">${t.key}</td>
+                        <td style="padding: 10px 12px; color: #1e293b; font-weight: 500;">${t.title}</td>
+                        <td style="padding: 10px 12px; font-weight: 600; color: ${t.priority === 'URGENT' || t.priority === 'HIGH' ? '#dc2626' : '#2563eb'};">${t.priority || 'MEDIUM'}</td>
+                        <td style="padding: 10px 12px; color: #64748b; font-weight: 500;">${t.status || 'TODO'}</td>
+                      </tr>
+                    `).join("")}
+                  </tbody>
+                </table>
+              </div>
+              ` : ""}
 
               <!-- Call to Action Button -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
