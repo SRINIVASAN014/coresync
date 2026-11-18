@@ -34,6 +34,7 @@ import {
   Compass,
   Rocket,
   Plane,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
@@ -883,6 +884,11 @@ export function Sidebar({
               {projectError && (
                 <p className="text-rose-600 text-[11px] font-medium">{projectError}</p>
               )}
+
+              <div className="bg-blue-50 border border-blue-100/80 rounded-xl p-2.5 flex items-center gap-2 text-blue-700 text-[11px]">
+                <Mail className="w-3.5 h-3.5 shrink-0 text-blue-600" />
+                <span>Executive onboarding confirmation & board link will be delivered to your Gmail inbox.</span>
+              </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button

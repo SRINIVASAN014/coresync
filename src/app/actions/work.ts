@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { TaskStatus, Priority, ProjectStatus, Role } from "@prisma/client";
 import { decomposeTaskSubtasksWithCoreSyncAI } from "@/lib/ai/coresync-ai";
 import { hasPermission, requirePermission } from "@/lib/rbac";
+import { sendProjectCreatedEmail } from "@/lib/email";
 
 /**
  * Update the status of a task (Backlog -> Todo -> In Progress -> In Review -> Done)
@@ -332,9 +333,50 @@ export async function createProject(data: {
       },
     });
 
+    // Dispatch Project Created Email Notification to Owner's Gmail
+    let emailStatus = null;
+    if (owner.email) {
+      try {
+        const org = await db.organization.findUnique({
+          where: { id: targetOrgId },
+          select: { name: true },
+        });
+
+        emailStatus = await sendProjectCreatedEmail({
+          toEmail: owner.email,
+          toName: owner.name,
+          projectName: project.name,
+          projectKey: project.key,
+          projectId: project.id,
+          description: project.description,
+          priority: project.priority,
+          organizationName: org?.name,
+        });
+
+        // Record email notification in Audit Ledger
+        await db.auditLog.create({
+          data: {
+            action: "PROJECT_CREATION_EMAIL_NOTIFIED",
+            entity: "Project",
+            entityId: project.id,
+            organizationId: targetOrgId,
+            userId: owner.id,
+            userEmail: owner.email,
+            details: JSON.stringify({
+              recipient: owner.email,
+              delivered: emailStatus.delivered,
+              simulated: emailStatus.simulated || false,
+            }),
+          },
+        });
+      } catch (emailErr) {
+        console.error("Non-blocking email dispatch error:", emailErr);
+      }
+    }
+
     revalidatePath("/dashboard/projects");
     revalidatePath("/dashboard");
-    return { success: true, project };
+    return { success: true, project, emailStatus };
   } catch (error: any) {
     console.error("Failed to create project:", error);
     return { success: false, error: error.message };

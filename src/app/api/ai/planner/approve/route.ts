@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { db } from "@/lib/db";
 import { ProjectStatus, Priority, TaskStatus } from "@prisma/client";
+import { sendProjectCreatedEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -75,6 +76,25 @@ export async function POST(req: Request) {
         }),
       },
     });
+
+    // 4. Dispatch Email Notification to Owner's Gmail
+    if (owner.email) {
+      try {
+        await sendProjectCreatedEmail({
+          toEmail: owner.email,
+          toName: owner.name,
+          projectName: project.name,
+          projectKey: project.key,
+          projectId: project.id,
+          description: project.description,
+          priority: project.priority,
+          organizationName: org.name,
+          tasksCount: (plan.tasks || []).length,
+        });
+      } catch (emailErr) {
+        console.error("Non-blocking AI plan email error:", emailErr);
+      }
+    }
 
     return NextResponse.json({ success: true, projectId: project.id });
   } catch (error: any) {

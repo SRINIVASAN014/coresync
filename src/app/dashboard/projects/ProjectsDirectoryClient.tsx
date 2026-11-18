@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Plus, FolderKanban, ArrowRight, Loader2, X } from "lucide-react";
+import { Plus, FolderKanban, ArrowRight, Loader2, X, Mail } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PriorityBadge } from "@/components/ui/PriorityBadge";
@@ -266,6 +266,11 @@ export function ProjectsDirectoryClient({
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none leading-relaxed"
                 />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-100/80 rounded-xl p-2.5 flex items-center gap-2 text-blue-700 text-[11px]">
+                <Mail className="w-3.5 h-3.5 shrink-0 text-blue-600" />
+                <span>Executive onboarding confirmation & board link will be delivered to your Gmail inbox.</span>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
