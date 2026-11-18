@@ -31,10 +31,7 @@ export interface ProjectEmailNotificationParams {
 function getAppBaseUrl(): string {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
   if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
-  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
-    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
-  }
+  // Always use the registered production domain so Google OAuth callback never fails
   return "https://coresync-bay.vercel.app";
 }
 
