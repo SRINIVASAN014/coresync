@@ -44,7 +44,7 @@ export function ProjectBoardClient({
   const [emailRecipient, setEmailRecipient] = React.useState(project.owner?.email || "");
   const [emailNote, setEmailNote] = React.useState("");
   const [isSendingEmail, setIsSendingEmail] = React.useState(false);
-  const [emailStatusMsg, setEmailStatusMsg] = React.useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [emailStatusMsg, setEmailStatusMsg] = React.useState<{ type: "success" | "warning" | "error"; text: string } | null>(null);
 
   const handleSendProjectEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +64,12 @@ export function ProjectBoardClient({
         if (res.emailStatus?.delivered) {
           setEmailStatusMsg({
             type: "success",
-            text: `Project report successfully delivered to ${res.recipient} via Gmail!`,
+            text: `✅ Project report successfully delivered to ${res.recipient} via Gmail!`,
           });
         } else if (res.emailStatus?.simulated) {
           setEmailStatusMsg({
-            type: "success",
-            text: `Project notification logged (Simulated). Configure GMAIL_USER & GMAIL_APP_PASSWORD in .env for live inbox delivery.`,
+            type: "warning",
+            text: `⚠️ Simulation Mode: The mail was NOT sent because your Gmail App Password is not yet added in Vercel or .env. Add GMAIL_USER and GMAIL_APP_PASSWORD to send real emails.`,
           });
         } else {
           setEmailStatusMsg({
@@ -80,13 +80,13 @@ export function ProjectBoardClient({
       } else {
         setEmailStatusMsg({
           type: "error",
-          text: res.error || "Failed to dispatch email",
+          text: `❌ ${res.error || "Failed to dispatch email"}`,
         });
       }
     } catch (err: any) {
       setEmailStatusMsg({
         type: "error",
-        text: err.message || "An unexpected error occurred",
+        text: `❌ ${err.message || "An unexpected error occurred"}`,
       });
     } finally {
       setIsSendingEmail(false);
@@ -395,6 +395,8 @@ export function ProjectBoardClient({
                   className={`p-3 rounded-xl text-[11px] leading-relaxed border ${
                     emailStatusMsg.type === "success"
                       ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : emailStatusMsg.type === "warning"
+                      ? "bg-amber-50 border-amber-200 text-amber-900"
                       : "bg-rose-50 border-rose-200 text-rose-800"
                   }`}
                 >
