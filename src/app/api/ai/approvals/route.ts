@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { db } from "@/lib/db";
 import { ApprovalStatus } from "@prisma/client";
+import { hasPermission } from "@/lib/rbac";
 
 export async function POST(req: Request) {
   try {
@@ -107,6 +108,34 @@ export async function POST(req: Request) {
     const reviewer = await db.user.findFirst({
       where: session?.user?.email ? { email: session.user.email } : undefined,
     });
+
+    const targetRequest = await db.approvalRequest.findUnique({
+      where: { id },
+    });
+    if (!targetRequest) {
+      return NextResponse.json({ error: "Approval request not found" }, { status: 404 });
+    }
+
+    // RBAC: Verify reviewer has "ai:approve" permission in this organization
+    if (reviewer) {
+      const membership = await db.organizationMember.findUnique({
+        where: {
+          organizationId_userId: {
+            organizationId: targetRequest.organizationId,
+            userId: reviewer.id,
+          },
+        },
+      });
+
+      if (membership && !hasPermission(membership.role, "ai:approve")) {
+        return NextResponse.json(
+          {
+            error: `Forbidden: Role '${membership.role}' cannot authorize AI actions. Manager or Admin role required.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const updated = await db.approvalRequest.update({
       where: { id },

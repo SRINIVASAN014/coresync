@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { TaskStatus, Priority, ProjectStatus, Role } from "@prisma/client";
 import { decomposeTaskSubtasksWithCoreSyncAI } from "@/lib/ai/coresync-ai";
+import { hasPermission, requirePermission } from "@/lib/rbac";
 
 /**
  * Update the status of a task (Backlog -> Todo -> In Progress -> In Review -> Done)
@@ -283,6 +284,20 @@ export async function createProject(data: {
 
     if (!targetOrgId) throw new Error("No organization found to create project in");
 
+    // RBAC: Verify caller has permission to create projects
+    const callerMember = await db.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: targetOrgId,
+          userId: owner.id,
+        },
+      },
+    });
+
+    if (callerMember && !hasPermission(callerMember.role, "projects:create")) {
+      throw new Error(`Forbidden: Role '${callerMember.role}' is not authorized to create projects.`);
+    }
+
     const project = await db.project.create({
       data: {
         name: data.name,
@@ -487,6 +502,196 @@ export async function createOrganization(data: {
     return { success: true, organization: newOrg };
   } catch (error: any) {
     console.error("Failed to create organization:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * RBAC: Update an organization member's role (OWNER or ADMIN only)
+ */
+export async function updateMemberRole(memberId: string, newRole: Role) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) throw new Error("Authentication required");
+
+    const currentUser = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!currentUser) throw new Error("User not found");
+
+    const targetMember = await db.organizationMember.findUnique({
+      where: { id: memberId },
+      include: { user: true, organization: true },
+    });
+    if (!targetMember) throw new Error("Organization member not found");
+
+    // Resolve caller's role in this organization
+    const callerMember = await db.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: targetMember.organizationId,
+          userId: currentUser.id,
+        },
+      },
+    });
+
+    if (!callerMember || !hasPermission(callerMember.role, "members:manage")) {
+      throw new Error("Forbidden: You lack permission to manage organization roles.");
+    }
+
+    // Safety guard: cannot demote the last remaining OWNER
+    if (targetMember.role === Role.OWNER && newRole !== Role.OWNER) {
+      const ownerCount = await db.organizationMember.count({
+        where: {
+          organizationId: targetMember.organizationId,
+          role: Role.OWNER,
+        },
+      });
+      if (ownerCount <= 1) {
+        throw new Error("Cannot demote the sole organization Owner.");
+      }
+    }
+
+    const updated = await db.organizationMember.update({
+      where: { id: memberId },
+      data: { role: newRole },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    // Create Audit Log
+    await db.auditLog.create({
+      data: {
+        organizationId: targetMember.organizationId,
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        action: "MEMBER_ROLE_UPDATED",
+        entity: "OrganizationMember",
+        entityId: targetMember.id,
+        details: JSON.stringify({
+          memberEmail: targetMember.user.email,
+          previousRole: targetMember.role,
+          assignedRole: newRole,
+          modifiedBy: currentUser.name || currentUser.email,
+        }),
+      },
+    });
+
+    revalidatePath("/dashboard/teams");
+    revalidatePath("/dashboard");
+    return { success: true, member: updated };
+  } catch (error: any) {
+    console.error("Failed to update member role:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * RBAC: Invite or add a new employee/member to the workspace
+ */
+export async function inviteMember(data: {
+  email: string;
+  role: Role;
+  name?: string;
+}) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) throw new Error("Authentication required");
+
+    const currentUser = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!currentUser) throw new Error("User not found");
+
+    const cookieStore = await cookies();
+    const activeOrgId = cookieStore.get("coresync_active_org_id")?.value;
+
+    let targetOrgId = activeOrgId;
+    if (!targetOrgId) {
+      const callerMembership = await db.organizationMember.findFirst({
+        where: { userId: currentUser.id },
+      });
+      targetOrgId = callerMembership?.organizationId;
+    }
+    if (!targetOrgId) throw new Error("No active organization found");
+
+    // Check permissions
+    const callerMember = await db.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: targetOrgId,
+          userId: currentUser.id,
+        },
+      },
+    });
+
+    if (!callerMember || !hasPermission(callerMember.role, "members:invite")) {
+      throw new Error("Forbidden: You lack permission to invite new members.");
+    }
+
+    const cleanEmail = data.email.toLowerCase().trim();
+
+    // Find or create User
+    let targetUser = await db.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
+    if (!targetUser) {
+      targetUser = await db.user.create({
+        data: {
+          email: cleanEmail,
+          name: data.name || cleanEmail.split("@")[0],
+        },
+      });
+    }
+
+    // Check if already a member
+    const existingMembership = await db.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: targetOrgId,
+          userId: targetUser.id,
+        },
+      },
+    });
+
+    if (existingMembership) {
+      throw new Error("User is already a member of this workspace.");
+    }
+
+    const membership = await db.organizationMember.create({
+      data: {
+        organizationId: targetOrgId,
+        userId: targetUser.id,
+        role: data.role || Role.MEMBER,
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    // Create Audit Log
+    await db.auditLog.create({
+      data: {
+        organizationId: targetOrgId,
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        action: "MEMBER_INVITED",
+        entity: "OrganizationMember",
+        entityId: membership.id,
+        details: JSON.stringify({
+          invitedEmail: cleanEmail,
+          role: data.role,
+          invitedBy: currentUser.name || currentUser.email,
+        }),
+      },
+    });
+
+    revalidatePath("/dashboard/teams");
+    return { success: true, member: membership };
+  } catch (error: any) {
+    console.error("Failed to invite member:", error);
     return { success: false, error: error.message };
   }
 }
