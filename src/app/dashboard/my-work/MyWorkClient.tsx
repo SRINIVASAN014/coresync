@@ -122,7 +122,7 @@ export function MyWorkClient({ user, assignedTasks, teamTasks }: MyWorkClientPro
             </span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Deliverables allocated across project sprints for <strong>{user.name || user.email}</strong> and team.
+            Active deliverables allocated across enterprise project sprints for <strong>{user.name || user.email}</strong>.
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export function MyWorkClient({ user, assignedTasks, teamTasks }: MyWorkClientPro
           }`}
         >
           <Send className="w-3.5 h-3.5" />
-          <span>Delegated / Sent to Team ({delegatedTasks.length})</span>
+          <span>Delegated to Team ({delegatedTasks.length})</span>
         </button>
 
         <button

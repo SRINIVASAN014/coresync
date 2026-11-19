@@ -133,10 +133,10 @@ export function TeamsClient({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Teams & Employees
+            Organization Directory & Teams
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage organization members, RBAC permissions, and team access for{" "}
+            Enterprise role-based access control (RBAC), multi-tenant provisioning, and directory governance for{" "}
             <span className="font-semibold text-slate-700">{orgName}</span>
           </p>
         </div>
@@ -149,7 +149,7 @@ export function TeamsClient({
             className="self-start sm:self-auto"
           >
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-            <span>Invite Employee</span>
+            <span>Invite Member</span>
           </Button>
         )}
       </div>
@@ -186,9 +186,9 @@ export function TeamsClient({
       <Card className="shadow-xs border-slate-200">
         <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <CardTitle>Organization Members ({members.length})</CardTitle>
+            <CardTitle>Organization Workforce ({members.length})</CardTitle>
             <p className="text-xs text-slate-500 mt-0.5">
-              Enterprise seats active under multi-tenant isolation
+              Active enterprise accounts provisioned with strict tenant isolation
             </p>
           </div>
           <span className="text-xs text-slate-500 font-mono">
@@ -321,7 +321,7 @@ export function TeamsClient({
                 <td className="py-2.5 text-center text-slate-300">—</td>
               </tr>
               <tr>
-                <td className="py-2.5 font-medium">Manage Employees & Role Assignments</td>
+                <td className="py-2.5 font-medium">Manage Member Directory & Role Assignments</td>
                 <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
                 <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
                 <td className="py-2.5 text-center text-slate-300">—</td>
@@ -372,7 +372,7 @@ export function TeamsClient({
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4 text-blue-600" />
-                <h3 className="text-sm font-bold text-slate-900">Invite Workspace Employee</h3>
+                <h3 className="text-sm font-bold text-slate-900">Provision Organization Member</h3>
               </div>
               <button
                 type="button"
@@ -386,7 +386,7 @@ export function TeamsClient({
             <form onSubmit={handleInviteSubmit} className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1">
-                  Employee Email Address *
+                  Corporate Email Address *
                 </label>
                 <input
                   type="email"

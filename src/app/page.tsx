@@ -57,7 +57,7 @@ export default async function LandingPage() {
 
           {/* Subtitle - Professional, Direct Engineering Copy */}
           <p className="max-w-2xl text-base sm:text-lg text-slate-400 mb-10 leading-relaxed font-normal">
-            High-velocity issue tracking, sprint milestones, and autonomous AI governance. Purpose-built for engineering teams who demand speed, keyboard navigation, and precision.
+            The enterprise work management platform for multinational engineering organizations. High-velocity issue tracking, sprint milestones, and autonomous AI governance with strict multi-tenant isolation.
           </p>
 
           {/* Action Buttons */}
@@ -327,7 +327,7 @@ export default async function LandingPage() {
             Predictable Pricing for High-Scale Engineering
           </h2>
           <p className="text-sm text-slate-400">
-            Start free for individuals and fast-moving teams. Scale to full multi-tenant mathematical isolation and custom enterprise SLAs.
+            Engineered for organizations of every scale—from dedicated engineering pods to global enterprise divisions requiring strict tenant isolation and SOC2 compliance.
           </p>
         </div>
 
@@ -338,7 +338,7 @@ export default async function LandingPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-white">Starter</h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400 uppercase">
-                  Free Forever
+                  Free Tier
                 </span>
               </div>
               <div className="flex items-baseline gap-1 mb-2">
@@ -346,13 +346,13 @@ export default async function LandingPage() {
                 <span className="text-xs text-slate-400">/ forever</span>
               </div>
               <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                Ideal for individual engineers and boutique technical teams shipping initial MVPs.
+                Essential issue tracking, sprint milestones, and agile Kanban workflows for core engineering units.
               </p>
 
               <div className="space-y-3 text-xs text-slate-300 border-t border-white/[0.06] pt-6 mb-8">
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
-                  <span>Up to 5 team members</span>
+                  <span>Up to 5 provisioned seats</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
@@ -364,11 +364,11 @@ export default async function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
-                  <span>Subtask checklist with progress</span>
+                  <span>Hierarchical subtasks & deliverable checklists</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-slate-500">
                   <Check className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                  <span>Community Discord support</span>
+                  <span>Standard developer support & SLA</span>
                 </div>
               </div>
             </div>
@@ -396,16 +396,16 @@ export default async function LandingPage() {
               </div>
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-4xl font-extrabold text-white">$19</span>
-                <span className="text-xs text-slate-400">/ member / month</span>
+                <span className="text-xs text-slate-400">/ seat / month</span>
               </div>
               <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                For fast-paced product teams scaling features with integrated AI agents.
+                For fast-paced product engineering teams integrating autonomous AI agents and cross-functional sprints.
               </p>
 
               <div className="space-y-3 text-xs text-slate-200 border-t border-white/[0.08] pt-6 mb-8">
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
-                  <span className="font-semibold text-white">Unlimited team members & projects</span>
+                  <span className="font-semibold text-white">Unlimited organization seats & projects</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
@@ -445,7 +445,7 @@ export default async function LandingPage() {
               </div>
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-4xl font-extrabold text-white">$49</span>
-                <span className="text-xs text-slate-400">/ member / month</span>
+                <span className="text-xs text-slate-400">/ seat / month</span>
               </div>
               <p className="text-xs text-slate-400 mb-6 leading-relaxed">
                 For multinational corporations requiring strict isolation, custom models, and SOC2 compliance.
