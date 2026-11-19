@@ -37,6 +37,7 @@ import {
   Mail,
   CheckSquare,
 } from "lucide-react";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { cn } from "@/lib/utils";
 import { switchActiveOrganization, createOrganization, createProject } from "@/app/actions/work";
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -301,9 +302,7 @@ export function Sidebar({
                   <p className="text-xs font-semibold text-slate-800 truncate leading-tight group-hover:text-[#0C66E4]">
                     {currentOrgName}
                   </p>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    {userRole}
-                  </span>
+                  <RoleBadge role={userRole} size="sm" />
                 </div>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />

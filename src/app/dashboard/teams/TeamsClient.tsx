@@ -11,9 +11,11 @@ import {
   X,
   Loader2,
   Info,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Role } from "@prisma/client";
 import { updateMemberRole, inviteMember } from "@/app/actions/work";
@@ -27,12 +29,12 @@ interface TeamsClientProps {
   orgName: string;
 }
 
-const AVAILABLE_ROLES: { role: Role; label: string; badge: "ai" | "warning" | "default" | "secondary" | "success" }[] = [
-  { role: Role.OWNER, label: "Owner", badge: "ai" },
-  { role: Role.ADMIN, label: "Admin", badge: "warning" },
-  { role: Role.MANAGER, label: "Manager", badge: "success" },
-  { role: Role.MEMBER, label: "Member", badge: "default" },
-  { role: Role.VIEWER, label: "Viewer", badge: "secondary" },
+const AVAILABLE_ROLES: { role: Role; label: string }[] = [
+  { role: Role.OWNER, label: "Owner — Full control & billing" },
+  { role: Role.ADMIN, label: "Admin — Manage directory & projects" },
+  { role: Role.MANAGER, label: "Manager — Projects & AI approvals" },
+  { role: Role.MEMBER, label: "Member — Standard engineering access" },
+  { role: Role.VIEWER, label: "Viewer — Read-only telemetry access" },
 ];
 
 export function TeamsClient({
@@ -191,9 +193,10 @@ export function TeamsClient({
               Active enterprise accounts provisioned with strict tenant isolation
             </p>
           </div>
-          <span className="text-xs text-slate-500 font-mono">
-            Your Role: <span className="font-bold text-slate-800">{currentUserRole}</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 font-mono">Your Access:</span>
+            <RoleBadge role={currentUserRole} />
+          </div>
         </CardHeader>
 
         <CardContent className="pt-2">
@@ -234,39 +237,38 @@ export function TeamsClient({
                     {/* Role Dropdown (If Manager/Admin) or Static Badge */}
                     {canEditThisMember ? (
                       <div className="flex items-center gap-1.5">
-                        <select
-                          value={member.role}
-                          onChange={(e) => handleRoleChange(member.id, e.target.value as Role)}
-                          disabled={updatingId === member.id}
-                          className="h-8 text-xs font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-md px-2.5 py-1 text-slate-800 shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition"
-                        >
-                          {AVAILABLE_ROLES.map((r) => (
-                            <option key={r.role} value={r.role}>
-                              {r.label}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative inline-flex items-center">
+                          <select
+                            value={member.role}
+                            onChange={(e) => handleRoleChange(member.id, e.target.value as Role)}
+                            disabled={updatingId === member.id}
+                            className={cn(
+                              "h-8 text-xs font-semibold rounded-md pl-2.5 pr-7 py-1 shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer transition appearance-none border",
+                              member.role === Role.OWNER
+                                ? "bg-purple-50/80 border-purple-200 text-purple-700 hover:border-purple-300"
+                                : member.role === Role.ADMIN
+                                ? "bg-blue-50/80 border-blue-200 text-blue-700 hover:border-blue-300"
+                                : member.role === Role.MANAGER
+                                ? "bg-emerald-50/80 border-emerald-200 text-emerald-700 hover:border-emerald-300"
+                                : member.role === Role.VIEWER
+                                ? "bg-zinc-100/80 border-zinc-200 text-zinc-600 hover:border-zinc-300"
+                                : "bg-slate-100/80 border-slate-200 text-slate-700 hover:border-slate-300"
+                            )}
+                          >
+                            {AVAILABLE_ROLES.map((r) => (
+                              <option key={r.role} value={r.role} className="bg-white text-slate-900 font-normal">
+                                {r.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" />
+                        </div>
                         {updatingId === member.id && (
                           <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
                         )}
                       </div>
                     ) : (
-                      <Badge
-                        variant={
-                          member.role === Role.OWNER
-                            ? "ai"
-                            : member.role === Role.ADMIN
-                            ? "warning"
-                            : member.role === Role.MANAGER
-                            ? "success"
-                            : member.role === Role.MEMBER
-                            ? "default"
-                            : "secondary"
-                        }
-                        className="text-[11px]"
-                      >
-                        {member.role}
-                      </Badge>
+                      <RoleBadge role={member.role} />
                     )}
 
                     <Button
@@ -303,12 +305,12 @@ export function TeamsClient({
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="pb-2">Capability / Scope</th>
-                <th className="pb-2 text-center">Owner</th>
-                <th className="pb-2 text-center">Admin</th>
-                <th className="pb-2 text-center">Manager</th>
-                <th className="pb-2 text-center">Member</th>
-                <th className="pb-2 text-center">Viewer</th>
+                <th className="pb-2.5">Capability / Scope</th>
+                <th className="pb-2.5 text-center"><RoleBadge role="OWNER" size="sm" /></th>
+                <th className="pb-2.5 text-center"><RoleBadge role="ADMIN" size="sm" /></th>
+                <th className="pb-2.5 text-center"><RoleBadge role="MANAGER" size="sm" /></th>
+                <th className="pb-2.5 text-center"><RoleBadge role="MEMBER" size="sm" /></th>
+                <th className="pb-2.5 text-center"><RoleBadge role="VIEWER" size="sm" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -412,20 +414,26 @@ export function TeamsClient({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">
-                  RBAC Role *
-                </label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as Role)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
-                >
-                  <option value={Role.ADMIN}>Admin — Manage team and projects</option>
-                  <option value={Role.MANAGER}>Manager — Create projects and approve AI actions</option>
-                  <option value={Role.MEMBER}>Member — Standard engineering access</option>
-                  <option value={Role.VIEWER}>Viewer — Read-only telemetry access</option>
-                </select>
-                <p className="text-[11px] text-slate-500 mt-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-slate-700 block">
+                    RBAC Role *
+                  </label>
+                  <RoleBadge role={inviteRole} size="sm" />
+                </div>
+                <div className="relative">
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as Role)}
+                    className="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer appearance-none"
+                  >
+                    <option value={Role.ADMIN}>Admin — Manage directory & projects</option>
+                    <option value={Role.MANAGER}>Manager — Projects & AI approvals</option>
+                    <option value={Role.MEMBER}>Member — Standard engineering access</option>
+                    <option value={Role.VIEWER}>Viewer — Read-only telemetry access</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                   {ROLE_DESCRIPTIONS[inviteRole]}
                 </p>
               </div>
@@ -460,9 +468,9 @@ export function TeamsClient({
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-blue-600" />
+                <RoleBadge role={inspectingRole} />
                 <h3 className="text-sm font-bold text-slate-900">
-                  {inspectingRole} Permissions
+                  Role Permissions
                 </h3>
               </div>
               <button
