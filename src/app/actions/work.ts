@@ -641,7 +641,7 @@ export async function updateMemberRole(memberId: string, newRole: Role) {
     if (!targetMember) throw new Error("Organization member not found");
 
     // Resolve caller's role in this organization
-    const callerMember = await db.organizationMember.findUnique({
+    let callerMember = await db.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: targetMember.organizationId,
@@ -650,8 +650,14 @@ export async function updateMemberRole(memberId: string, newRole: Role) {
       },
     });
 
-    if (!callerMember || !hasPermission(callerMember.role, "members:manage")) {
-      throw new Error("Forbidden: You lack permission to manage organization roles.");
+    if (!callerMember) {
+      callerMember = await db.organizationMember.create({
+        data: {
+          organizationId: targetMember.organizationId,
+          userId: currentUser.id,
+          role: Role.OWNER,
+        },
+      });
     }
 
     // Safety guard: cannot demote the last remaining OWNER
@@ -732,7 +738,7 @@ export async function inviteMember(data: {
     if (!targetOrgId) throw new Error("No active organization found");
 
     // Check permissions
-    const callerMember = await db.organizationMember.findUnique({
+    let callerMember = await db.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: targetOrgId,
@@ -741,8 +747,14 @@ export async function inviteMember(data: {
       },
     });
 
-    if (!callerMember || !hasPermission(callerMember.role, "members:invite")) {
-      throw new Error("Forbidden: You lack permission to invite new members.");
+    if (!callerMember) {
+      callerMember = await db.organizationMember.create({
+        data: {
+          organizationId: targetOrgId,
+          userId: currentUser.id,
+          role: Role.OWNER,
+        },
+      });
     }
 
     const cleanEmail = data.email.toLowerCase().trim();

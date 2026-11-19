@@ -217,24 +217,28 @@ export async function POST(req: Request) {
       tasksList,
     });
 
-    // Record Audit Log
-    await db.auditLog.create({
-      data: {
-        action: "PROJECT_DISPATCHED_VIA_GMAIL",
-        entity: "Project",
-        entityId: project.id,
-        organizationId: project.organizationId,
-        userId: callerUser?.id,
-        userEmail: callerUser?.email,
-        details: JSON.stringify({
-          recipient: targetEmail,
-          role: roleLabel,
-          tasksSplitCount: tasksList.length,
-          delivered: emailStatus.delivered,
-          simulated: emailStatus.simulated || false,
-        }),
-      },
-    });
+    // Record Audit Log safely (non-blocking)
+    try {
+      await db.auditLog.create({
+        data: {
+          action: "PROJECT_DISPATCHED_VIA_GMAIL",
+          entity: "Project",
+          entityId: project.id,
+          organizationId: project.organizationId,
+          userId: callerUser?.id,
+          userEmail: callerUser?.email,
+          details: JSON.stringify({
+            recipient: targetEmail,
+            role: roleLabel,
+            tasksSplitCount: tasksList.length,
+            delivered: emailStatus.delivered,
+            simulated: emailStatus.simulated || false,
+          }),
+        },
+      });
+    } catch (auditErr) {
+      console.warn("Non-blocking audit log creation error:", auditErr);
+    }
 
     return NextResponse.json({
       success: true,

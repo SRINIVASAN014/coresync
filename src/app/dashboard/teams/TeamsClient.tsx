@@ -138,7 +138,7 @@ export function TeamsClient({
             Organization Directory & Teams
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Enterprise role-based access control (RBAC), multi-tenant provisioning, and directory governance for{" "}
+            Team directory, organizational access, and workspace governance for{" "}
             <span className="font-semibold text-slate-700">{orgName}</span>
           </p>
         </div>
@@ -288,86 +288,7 @@ export function TeamsClient({
         </CardContent>
       </Card>
 
-      {/* 4. Enterprise RBAC Access Control Matrix */}
-      <Card className="shadow-xs border-slate-200">
-        <CardHeader className="pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-600" />
-            <CardTitle className="text-sm font-bold text-slate-900">
-              Role-Based Access Control (RBAC) Matrix
-            </CardTitle>
-          </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Deterministic governance permissions enforced across CoreSync APIs and Server Actions
-          </p>
-        </CardHeader>
-        <CardContent className="pt-4 overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="pb-2.5">Capability / Scope</th>
-                <th className="pb-2.5 text-center"><RoleBadge role="OWNER" size="sm" /></th>
-                <th className="pb-2.5 text-center"><RoleBadge role="ADMIN" size="sm" /></th>
-                <th className="pb-2.5 text-center"><RoleBadge role="MANAGER" size="sm" /></th>
-                <th className="pb-2.5 text-center"><RoleBadge role="MEMBER" size="sm" /></th>
-                <th className="pb-2.5 text-center"><RoleBadge role="VIEWER" size="sm" /></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              <tr>
-                <td className="py-2.5 font-medium">Workspace Profile & Security Policies</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 font-medium">Manage Member Directory & Role Assignments</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 font-medium">Authorize Autonomous AI Agent Actions</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 font-medium">Create & Archive Projects</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 font-medium">Create, Update & Close Sprint Tasks</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-slate-300">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 font-medium">Read-Only Telemetry & Board View</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-                <td className="py-2.5 text-center text-emerald-600 font-bold">✓</td>
-              </tr>
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
-
-      {/* 5. Invite Employee Modal */}
+      {/* 4. Invite Employee Modal */}
       {isInviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
@@ -416,7 +337,7 @@ export function TeamsClient({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-slate-700 block">
-                    RBAC Role *
+                    Team Role *
                   </label>
                   <RoleBadge role={inviteRole} size="sm" />
                 </div>

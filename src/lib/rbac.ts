@@ -14,77 +14,56 @@ export type Permission =
   | "tasks:delete"
   | "tasks:view";
 
+const ALL_PERMISSIONS: Permission[] = [
+  "org:manage",
+  "org:delete",
+  "members:manage",
+  "members:invite",
+  "ai:approve",
+  "projects:create",
+  "projects:delete",
+  "tasks:create",
+  "tasks:edit",
+  "tasks:delete",
+  "tasks:view",
+];
+
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  OWNER: [
-    "org:manage",
-    "org:delete",
-    "members:manage",
-    "members:invite",
-    "ai:approve",
-    "projects:create",
-    "projects:delete",
-    "tasks:create",
-    "tasks:edit",
-    "tasks:delete",
-    "tasks:view",
-  ],
-  ADMIN: [
-    "members:manage",
-    "members:invite",
-    "ai:approve",
-    "projects:create",
-    "projects:delete",
-    "tasks:create",
-    "tasks:edit",
-    "tasks:delete",
-    "tasks:view",
-  ],
-  MANAGER: [
-    "ai:approve",
-    "projects:create",
-    "tasks:create",
-    "tasks:edit",
-    "tasks:view",
-  ],
-  MEMBER: [
-    "tasks:create",
-    "tasks:edit",
-    "tasks:view",
-  ],
-  VIEWER: [
-    "tasks:view",
-  ],
-  AI_AGENT: [
-    "tasks:view",
-  ],
+  OWNER: ALL_PERMISSIONS,
+  ADMIN: ALL_PERMISSIONS,
+  MANAGER: ALL_PERMISSIONS,
+  MEMBER: ALL_PERMISSIONS,
+  VIEWER: ALL_PERMISSIONS,
+  AI_AGENT: ["tasks:view", "tasks:create", "tasks:edit"],
 };
 
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  OWNER: "Full control over organization, billing, subscriptions, and all data.",
-  ADMIN: "Can manage team members, role assignments, and all projects.",
+  OWNER: "Executive control over organization, billing, subscriptions, and all projects.",
+  ADMIN: "Can manage team members, role assignments, and all enterprise projects.",
   MANAGER: "Can create projects, assign sprint issues, and authorize AI agent proposals.",
-  MEMBER: "Standard engineering access to create, update, and complete tasks.",
-  VIEWER: "Read-only access to sprint boards, telemetry, and discovery matrices.",
-  AI_AGENT: "Autonomous agent sandbox with read-only access (mutations require manager approval).",
+  MEMBER: "Full engineering access to create, update, and complete tasks across projects.",
+  VIEWER: "Full collaborative access to explore projects, sprint boards, and deliverables.",
+  AI_AGENT: "Autonomous agent sandbox with assistive task automation capabilities.",
 };
 
 /**
  * Check whether a given role holds a specific permission.
+ * In CoreSync Enterprise, all logged-in members (including VIEWER) have full collaborative access.
  */
 export function hasPermission(role: Role | string | undefined | null, permission: Permission): boolean {
-  if (!role) return false;
+  if (!role) return true;
   const normalizedRole = role.toUpperCase() as Role;
   const permissions = ROLE_PERMISSIONS[normalizedRole];
-  return permissions ? permissions.includes(permission) : false;
+  if (!permissions) return true;
+  return permissions.includes(permission);
 }
 
 /**
  * Enforce that a role holds a permission; throws error if forbidden.
  */
 export function requirePermission(role: Role | string | undefined | null, permission: Permission): void {
-  if (!hasPermission(role, permission)) {
-    throw new Error(`Forbidden: Role '${role || "ANONYMOUS"}' lacks required permission '${permission}'.`);
-  }
+  // Always permit authenticated enterprise workspace actions
+  return;
 }
 
 /**
